@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { CountryAdapters, autoDetectCountry, SUPPORTED_COUNTRIES } from '../core/country-registry';
 
 describe('Multi-Country Extensible Architecture', () => {
-  it('registers all 8 supported countries with complete metadata', () => {
-    expect(SUPPORTED_COUNTRIES.length).toBe(8);
+  it('registers all 9 supported countries with complete metadata', () => {
+    expect(SUPPORTED_COUNTRIES.length).toBe(9);
     const countryIds = SUPPORTED_COUNTRIES.map((c) => c.id);
     expect(countryIds).toEqual(
-      expect.arrayContaining(['DE', 'AT', 'CH', 'JP', 'TH', 'VN', 'AU', 'NZ'])
+      expect.arrayContaining(['DE', 'AT', 'CH', 'JP', 'TH', 'VN', 'AU', 'NZ', 'US'])
     );
   });
 
@@ -266,6 +266,69 @@ describe('Multi-Country Extensible Architecture', () => {
     });
   });
 
+  describe('United States Adapter (US)', () => {
+    const us = CountryAdapters.US;
+
+    it('parses California standard plate (CA 7SAM123)', () => {
+      const res = us.parse('CA 7SAM123');
+      expect(res.isValid).toBe(true);
+      expect(res.country).toBe('US');
+      expect(res.districtCode).toBe('CA');
+      expect(res.districtName).toBe('California');
+      expect(res.topLineText).toBe('CALIFORNIA');
+      expect(res.bottomLineText).toContain('Golden State');
+    });
+
+    it('parses Texas Lone Star plate (TX ABC-1234)', () => {
+      const res = us.parse('TX ABC-1234');
+      expect(res.isValid).toBe(true);
+      expect(res.districtCode).toBe('TX');
+      expect(res.districtName).toBe('Texas');
+      expect(res.topLineText).toBe('TEXAS');
+      expect(res.bottomLineText).toContain('Lone Star');
+    });
+
+    it('parses New York Empire State plate (NY ABC-1234)', () => {
+      const res = us.parse('NY ABC-1234');
+      expect(res.isValid).toBe(true);
+      expect(res.districtCode).toBe('NY');
+      expect(res.districtName).toBe('New York');
+      expect(res.topLineText).toBe('NEW YORK');
+      expect(res.bottomLineText).toContain('Empire State');
+    });
+
+    it('parses U.S. Diplomatic OFM plate (D 1234)', () => {
+      const res = us.parse('D 1234');
+      expect(res.isValid).toBe(true);
+      expect(res.category).toBe('diplomatic');
+      expect(res.topLineText).toBe('UNITED STATES OF AMERICA');
+      expect(res.specialPerks.some((p) => p.includes('Vienna Convention'))).toBe(true);
+    });
+
+    it('parses U.S. Federal Government G-plate (G12-3456)', () => {
+      const res = us.parse('G12-3456');
+      expect(res.isValid).toBe(true);
+      expect(res.category).toBe('government');
+      expect(res.topLineText).toBe('U.S. GOVERNMENT');
+      expect(res.bottomLineText).toContain('FOR OFFICIAL USE ONLY');
+      expect(res.specialPerks.some((p) => p.includes('General Services Administration'))).toBe(true);
+    });
+
+    it('auto-detects California 7-character pattern without prefix (7SAM123)', () => {
+      const res = us.parse('7SAM123');
+      expect(res.isValid).toBe(true);
+      expect(res.districtCode).toBe('CA');
+      expect(res.topLineText).toBe('CALIFORNIA');
+    });
+
+    it('handles antique / historic vehicle plates (CA ANTIQUE 123)', () => {
+      const res = us.parse('CA ANTIQUE 123');
+      expect(res.isValid).toBe(true);
+      expect(res.category).toBe('classic');
+      expect(res.specialPerks.some((p) => p.includes('smog'))).toBe(true);
+    });
+  });
+
   describe('Auto Detection Helper', () => {
     it('detects Switzerland for cantonal format (ZH 12345)', () => {
       expect(autoDetectCountry('ZH 12345')).toBe('CH');
@@ -293,6 +356,18 @@ describe('Multi-Country Extensible Architecture', () => {
 
     it('detects New Zealand for standard format (ABC 123)', () => {
       expect(autoDetectCountry('ABC 123')).toBe('NZ');
+    });
+
+    it('detects United States for California pattern (7SAM123)', () => {
+      expect(autoDetectCountry('7SAM123')).toBe('US');
+    });
+
+    it('detects United States for state prefix (CA 7SAM123)', () => {
+      expect(autoDetectCountry('CA 7SAM123')).toBe('US');
+    });
+
+    it('detects United States for federal G-plate (G12-3456)', () => {
+      expect(autoDetectCountry('G12-3456')).toBe('US');
     });
 
     it('defaults to Germany for German plates (B MW 1234 E)', () => {

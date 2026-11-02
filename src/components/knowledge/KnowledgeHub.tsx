@@ -179,6 +179,10 @@ export const KnowledgeHub: React.FC = () => {
               <strong className="text-white block font-semibold mb-1">🇦🇹 Austria &amp; 🇨🇭 Switzerland</strong>
               Austria uses white reflective plates with federal state coats of arms in the middle and green lettering for EVs. Switzerland features compact aluminum plates with the Swiss national shield on the left and the cantonal crest on the right, linked to the registered owner (Wechselschild).
             </div>
+            <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
+              <strong className="text-white block font-semibold mb-1">🇺🇸 United States</strong>
+              Standard 12 in × 6 in (2:1 aspect ratio) plates issued independently by 50 state DMVs + D.C. Features state nicknames, official slogans (The Golden State, Lone Star, Empire State), and corner expiration tags. The U.S. Dept of State (OFM) issues diplomatic plates (D/C/S), and the GSA oversees federal civilian G-fleet vehicles.
+            </div>
           </div>
         </div>
       </div>

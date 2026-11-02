@@ -166,6 +166,8 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
               ? `${district.code} AA-12-BB`
               : country === 'NZ'
               ? `ABC 123`
+              : country === 'US'
+              ? `${district.code} ${(district as any).defaultFormat || '7SAM123'}`
               : `${district.code} AB 123`
           );
 

@@ -1,0 +1,62 @@
+import { District } from '../types';
+
+export interface USStateDistrict extends District {
+  slogan: string;
+  defaultFormat: string;
+  accentColor?: string;
+  headerTextColor?: string;
+}
+
+export const US_STATES: USStateDistrict[] = [
+  { code: 'AL', name: 'Alabama', state: 'Alabama', stateCode: 'al', fullName: 'State of Alabama', slogan: 'Yellowhammer State / Sweet Home Alabama', defaultFormat: '123-ABC', accentColor: '#00205b' },
+  { code: 'AK', name: 'Alaska', state: 'Alaska', stateCode: 'ak', fullName: 'State of Alaska', slogan: 'The Last Frontier', defaultFormat: 'ABC-123', accentColor: '#00205b' },
+  { code: 'AZ', name: 'Arizona', state: 'Arizona', stateCode: 'az', fullName: 'State of Arizona', slogan: 'Grand Canyon State', defaultFormat: 'ABC-1234', accentColor: '#1d3557' },
+  { code: 'AR', name: 'Arkansas', state: 'Arkansas', stateCode: 'ar', fullName: 'State of Arkansas', slogan: 'The Natural State', defaultFormat: '123-ABC', accentColor: '#00205b' },
+  { code: 'CA', name: 'California', state: 'California', stateCode: 'ca', fullName: 'State of California', slogan: 'dmv.ca.gov / The Golden State', defaultFormat: '7SAM123', accentColor: '#002b66', headerTextColor: '#b91c1c' },
+  { code: 'CO', name: 'Colorado', state: 'Colorado', stateCode: 'co', fullName: 'State of Colorado', slogan: 'Centennial State / Rocky Mountains', defaultFormat: 'ABC-D12', accentColor: '#1b4332' },
+  { code: 'CT', name: 'Connecticut', state: 'Connecticut', stateCode: 'ct', fullName: 'State of Connecticut', slogan: 'Constitution State', defaultFormat: 'AB-12345', accentColor: '#00205b' },
+  { code: 'DE', name: 'Delaware', state: 'Delaware', stateCode: 'de', fullName: 'State of Delaware', slogan: 'The First State', defaultFormat: '123456', accentColor: '#e0a96d' },
+  { code: 'DC', name: 'District of Columbia', state: 'District of Columbia', stateCode: 'dc', fullName: 'Washington, D.C.', slogan: 'Taxation Without Representation', defaultFormat: 'AB-1234', accentColor: '#b91c1c' },
+  { code: 'FL', name: 'Florida', state: 'Florida', stateCode: 'fl', fullName: 'State of Florida', slogan: 'Sunshine State / MyFlorida.com', defaultFormat: '12A-BCD', accentColor: '#105e32' },
+  { code: 'GA', name: 'Georgia', state: 'Georgia', stateCode: 'ga', fullName: 'State of Georgia', slogan: 'The Peach State', defaultFormat: 'ABC-1234', accentColor: '#00205b' },
+  { code: 'HI', name: 'Hawaii', state: 'Hawaii', stateCode: 'hi', fullName: 'State of Hawaii', slogan: 'Aloha State', defaultFormat: 'ABC-123', accentColor: '#1d3557' },
+  { code: 'ID', name: 'Idaho', state: 'Idaho', stateCode: 'id', fullName: 'State of Idaho', slogan: 'Famous Potatoes', defaultFormat: '1A-12345', accentColor: '#00205b' },
+  { code: 'IL', name: 'Illinois', state: 'Illinois', stateCode: 'il', fullName: 'State of Illinois', slogan: 'Land of Lincoln', defaultFormat: 'AB-12345', accentColor: '#b91c1c' },
+  { code: 'IN', name: 'Indiana', state: 'Indiana', stateCode: 'in', fullName: 'State of Indiana', slogan: 'The Hoosier State', defaultFormat: '123-ABC', accentColor: '#00205b' },
+  { code: 'IA', name: 'Iowa', state: 'Iowa', stateCode: 'ia', fullName: 'State of Iowa', slogan: 'The Hawkeye State', defaultFormat: 'ABC-123', accentColor: '#00205b' },
+  { code: 'KS', name: 'Kansas', state: 'Kansas', stateCode: 'ks', fullName: 'State of Kansas', slogan: 'Sunflower State', defaultFormat: '123-ABC', accentColor: '#1d3557' },
+  { code: 'KY', name: 'Kentucky', state: 'Kentucky', stateCode: 'ky', fullName: 'Commonwealth of Kentucky', slogan: 'Bluegrass State', defaultFormat: '123-ABC', accentColor: '#00205b' },
+  { code: 'LA', name: 'Louisiana', state: 'Louisiana', stateCode: 'la', fullName: 'State of Louisiana', slogan: 'Sportsman’s Paradise', defaultFormat: '123-ABC', accentColor: '#00205b' },
+  { code: 'ME', name: 'Maine', state: 'Maine', stateCode: 'me', fullName: 'State of Maine', slogan: 'Vacationland', defaultFormat: '123-ABC', accentColor: '#1b4332' },
+  { code: 'MD', name: 'Maryland', state: 'Maryland', stateCode: 'md', fullName: 'State of Maryland', slogan: 'Free State / Old Line State', defaultFormat: '1AB2345', accentColor: '#00205b' },
+  { code: 'MA', name: 'Massachusetts', state: 'Massachusetts', stateCode: 'ma', fullName: 'Commonwealth of Massachusetts', slogan: 'The Spirit of America', defaultFormat: '1AB-234', accentColor: '#b91c1c' },
+  { code: 'MI', name: 'Michigan', state: 'Michigan', stateCode: 'mi', fullName: 'State of Michigan', slogan: 'The Great Lakes State / Pure Michigan', defaultFormat: 'ABC-1234', accentColor: '#00205b' },
+  { code: 'MN', name: 'Minnesota', state: 'Minnesota', stateCode: 'mn', fullName: 'State of Minnesota', slogan: '10,000 Lakes', defaultFormat: 'ABC-123', accentColor: '#00205b' },
+  { code: 'MS', name: 'Mississippi', state: 'Mississippi', stateCode: 'ms', fullName: 'State of Mississippi', slogan: 'The Magnolia State', defaultFormat: 'ABC-1234', accentColor: '#00205b' },
+  { code: 'MO', name: 'Missouri', state: 'Missouri', stateCode: 'mo', fullName: 'State of Missouri', slogan: 'Show-Me State', defaultFormat: 'AB1-C2D', accentColor: '#00205b' },
+  { code: 'MT', name: 'Montana', state: 'Montana', stateCode: 'mt', fullName: 'State of Montana', slogan: 'Big Sky Country', defaultFormat: '1-12345A', accentColor: '#00205b' },
+  { code: 'NE', name: 'Nebraska', state: 'Nebraska', stateCode: 'ne', fullName: 'State of Nebraska', slogan: 'Cornhusker State', defaultFormat: 'ABC-123', accentColor: '#00205b' },
+  { code: 'NV', name: 'Nevada', state: 'Nevada', stateCode: 'nv', fullName: 'State of Nevada', slogan: 'The Silver State / Home Means Nevada', defaultFormat: '123-A45', accentColor: '#00205b' },
+  { code: 'NH', name: 'New Hampshire', state: 'New Hampshire', stateCode: 'nh', fullName: 'State of New Hampshire', slogan: 'Live Free or Die', defaultFormat: '123-4567', accentColor: '#1b4332' },
+  { code: 'NJ', name: 'New Jersey', state: 'New Jersey', stateCode: 'nj', fullName: 'State of New Jersey', slogan: 'Garden State', defaultFormat: 'A12-BCD', accentColor: '#000000' },
+  { code: 'NM', name: 'New Mexico', state: 'New Mexico', stateCode: 'nm', fullName: 'State of New Mexico', slogan: 'Land of Enchantment', defaultFormat: 'ABC-123', accentColor: '#b91c1c' },
+  { code: 'NY', name: 'New York', state: 'New York', stateCode: 'ny', fullName: 'State of New York', slogan: 'Empire State / Excelsior', defaultFormat: 'ABC-1234', accentColor: '#00205b' },
+  { code: 'NC', name: 'North Carolina', state: 'North Carolina', stateCode: 'nc', fullName: 'State of North Carolina', slogan: 'First in Flight', defaultFormat: 'ABC-1234', accentColor: '#b91c1c' },
+  { code: 'ND', name: 'North Dakota', state: 'North Dakota', stateCode: 'nd', fullName: 'State of North Dakota', slogan: 'Peace Garden State', defaultFormat: '123-ABC', accentColor: '#00205b' },
+  { code: 'OH', name: 'Ohio', state: 'Ohio', stateCode: 'oh', fullName: 'State of Ohio', slogan: 'Birthplace of Aviation', defaultFormat: 'ABC-1234', accentColor: '#b91c1c' },
+  { code: 'OK', name: 'Oklahoma', state: 'Oklahoma', stateCode: 'ok', fullName: 'State of Oklahoma', slogan: 'Native America / Explore Oklahoma', defaultFormat: 'ABC-123', accentColor: '#00205b' },
+  { code: 'OR', name: 'Oregon', state: 'Oregon', stateCode: 'or', fullName: 'State of Oregon', slogan: 'Pacific Wonderland', defaultFormat: '123-ABC', accentColor: '#1b4332' },
+  { code: 'PA', name: 'Pennsylvania', state: 'Pennsylvania', stateCode: 'pa', fullName: 'Commonwealth of Pennsylvania', slogan: 'visitPA.com / Keystone State', defaultFormat: 'ABC-1234', accentColor: '#00205b' },
+  { code: 'RI', name: 'Rhode Island', state: 'Rhode Island', stateCode: 'ri', fullName: 'State of Rhode Island', slogan: 'Ocean State', defaultFormat: '123-456', accentColor: '#00205b' },
+  { code: 'SC', name: 'South Carolina', state: 'South Carolina', stateCode: 'sc', fullName: 'State of South Carolina', slogan: 'While I Breathe, I Hope', defaultFormat: 'ABC-123', accentColor: '#00205b' },
+  { code: 'SD', name: 'South Dakota', state: 'South Dakota', stateCode: 'sd', fullName: 'State of South Dakota', slogan: 'Great Faces, Great Places (Mt Rushmore)', defaultFormat: '1A2-345', accentColor: '#00205b' },
+  { code: 'TN', name: 'Tennessee', state: 'Tennessee', stateCode: 'tn', fullName: 'State of Tennessee', slogan: 'The Volunteer State', defaultFormat: '123-ABCD', accentColor: '#00205b' },
+  { code: 'TX', name: 'Texas', state: 'Texas', stateCode: 'tx', fullName: 'State of Texas', slogan: 'The Lone Star State', defaultFormat: 'ABC-1234', accentColor: '#000000' },
+  { code: 'UT', name: 'Utah', state: 'Utah', stateCode: 'ut', fullName: 'State of Utah', slogan: 'Life Elevated / Greatest Snow on Earth', defaultFormat: 'A12-3BC', accentColor: '#00205b' },
+  { code: 'VT', name: 'Vermont', state: 'Vermont', stateCode: 'vt', fullName: 'State of Vermont', slogan: 'Green Mountain State', defaultFormat: 'ABC-123', accentColor: '#1b4332' },
+  { code: 'VA', name: 'Virginia', state: 'Virginia', stateCode: 'va', fullName: 'Commonwealth of Virginia', slogan: 'Virginia is for Lovers', defaultFormat: 'ABC-1234', accentColor: '#00205b' },
+  { code: 'WA', name: 'Washington', state: 'Washington', stateCode: 'wa', fullName: 'State of Washington', slogan: 'The Evergreen State', defaultFormat: 'ABC-1234', accentColor: '#1b4332' },
+  { code: 'WV', name: 'West Virginia', state: 'West Virginia', stateCode: 'wv', fullName: 'State of West Virginia', slogan: 'Wild, Wonderful', defaultFormat: '1AB-234', accentColor: '#00205b' },
+  { code: 'WI', name: 'Wisconsin', state: 'Wisconsin', stateCode: 'wi', fullName: 'State of Wisconsin', slogan: 'America’s Dairyland', defaultFormat: 'ABC-1234', accentColor: '#b91c1c' },
+  { code: 'WY', name: 'Wyoming', state: 'Wyoming', stateCode: 'wy', fullName: 'State of Wyoming', slogan: 'That’s WY / Cowboy State', defaultFormat: '1-12345', accentColor: '#8a4b12' },
+];

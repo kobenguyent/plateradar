@@ -1,4 +1,4 @@
-export type CountryCode = 'DE' | 'AT' | 'CH' | 'JP' | 'TH' | 'VN' | 'AU' | 'NZ';
+export type CountryCode = 'DE' | 'AT' | 'CH' | 'JP' | 'TH' | 'VN' | 'AU' | 'NZ' | 'US';
 
 export interface CountryInfo {
   id: CountryCode;
@@ -44,6 +44,7 @@ export interface District {
   isHistorical?: boolean;
   derivedFrom?: string;
   regionType?: string;
+  slogan?: string;
 }
 
 export interface DiplomaticMission {

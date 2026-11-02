@@ -55,6 +55,14 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
           middleLetters: 'ABC',
           numberPart: '123',
         };
+      case 'US':
+        return {
+          category: 'standard' as PlateCategory,
+          districtCode: 'CA',
+          classCode: '',
+          middleLetters: '',
+          numberPart: '7SAM123',
+        };
       case 'AT':
         return {
           category: 'standard' as PlateCategory,
@@ -135,6 +143,14 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
         setMiddleLetters('QA');
         setNumberPart('12-34');
       }
+    } else if (country === 'US') {
+      if (cat === 'diplomatic') {
+        setNumberPart('D 1234');
+      } else if (cat === 'government') {
+        setNumberPart('G12-3456');
+      } else {
+        setNumberPart('7SAM123');
+      }
     } else if (country === 'DE') {
       if (cat === 'electric') {
         setSuffix('E');
@@ -198,6 +214,11 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
     }
     if (country === 'NZ') {
       return `${middleLetters} ${numberPart}`.trim();
+    }
+    if (country === 'US') {
+      if (category === 'diplomatic') return `D ${numberPart.replace(/[^0-9]/g, '') || '1234'}`;
+      if (category === 'government') return `G12-${numberPart.replace(/[^0-9]/g, '') || '3456'}`;
+      return `${districtCode} ${numberPart}`;
     }
     if (country === 'CH') {
       return `${districtCode} ${numberPart}`.trim();
@@ -416,13 +437,21 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
                   <option value="classic">Legacy Pre-2001 Series (AA 1234)</option>
                 </>
               )}
+              {country === 'US' && (
+                <>
+                  <option value="standard">Standard State Issue Plate (DMV)</option>
+                  <option value="classic">Antique / Historic Vehicle</option>
+                  <option value="diplomatic">U.S. Dept of State Diplomatic (OFM)</option>
+                  <option value="government">U.S. Federal Government (GSA Fleet)</option>
+                </>
+              )}
             </select>
           </div>
 
           {/* District / State / Province Selector */}
           <div>
             <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
-              {country === 'JP' ? 'Transport Branch Office (Kanji)' : country === 'AU' ? 'State / Territory' : country === 'VN' ? 'Province Code' : country === 'CH' ? 'Canton' : 'District Code'}
+              {country === 'JP' ? 'Transport Branch Office (Kanji)' : country === 'AU' || country === 'US' ? 'State / Jurisdiction' : country === 'VN' ? 'Province Code' : country === 'CH' ? 'Canton' : 'District Code'}
             </label>
             <div className="flex gap-2">
               <select

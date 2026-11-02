@@ -67,12 +67,14 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
   }
 
   const isJapan = plate.country === 'JP';
+  const isUSA = plate.country === 'US';
+  const isCompactAspect = isJapan || isUSA;
   const hasBottomLine = Boolean(plate.bottomLineText);
 
-  // Aspect ratio & sizing
-  const aspectRatio = isJapan ? '330 / 165' : hasBottomLine ? '520 / 125' : '520 / 110';
+  // Aspect ratio & sizing (USA and Japan use 12x6 / 2:1 format)
+  const aspectRatio = isCompactAspect ? '305 / 152' : hasBottomLine ? '520 / 125' : '520 / 110';
 
-  const sizeStyles = isJapan
+  const sizeStyles = isCompactAspect
     ? {
         sm: 'h-20 min-w-[190px]',
         md: 'h-28 min-w-[260px]',
@@ -117,10 +119,20 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
         <div className={`absolute inset-[2px] rounded-[7px] border-[1px] md:border-[1.5px] ${innerBorderColorClass} pointer-events-none opacity-40`} />
 
         {/* Optional Realistic Screw Hole Caps for Standard Plates */}
-        {showScrews && !isJapan && (
+        {showScrews && !isCompactAspect && (
           <>
             <div className="absolute left-14 md:left-16 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 border border-slate-600 shadow-inner opacity-80 pointer-events-none" />
             <div className="absolute right-14 md:right-16 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 border border-slate-600 shadow-inner opacity-80 pointer-events-none" />
+          </>
+        )}
+
+        {/* Four-corner mounting screw caps for US plates */}
+        {showScrews && isUSA && (
+          <>
+            <div className="absolute left-5 top-2.5 w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 border border-slate-600 shadow-inner opacity-70 pointer-events-none" />
+            <div className="absolute right-5 top-2.5 w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 border border-slate-600 shadow-inner opacity-70 pointer-events-none" />
+            <div className="absolute left-5 bottom-2.5 w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 border border-slate-600 shadow-inner opacity-70 pointer-events-none" />
+            <div className="absolute right-5 bottom-2.5 w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 border border-slate-600 shadow-inner opacity-70 pointer-events-none" />
           </>
         )}
 
@@ -268,6 +280,47 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
                   </span>
                 </>
               )}
+            </div>
+          </div>
+        ) : isUSA ? (
+          /* --- US SPECIAL 12x6 INCH PLATE DISPLAY --- */
+          <div className="flex-1 flex flex-col justify-between items-center py-2 px-3 h-full w-full">
+            {/* Top Row: Registration Month Sticker, State Name, Registration Year Sticker */}
+            <div className="w-full flex items-center justify-between px-2 pt-0.5 z-10">
+              {/* Month Decal */}
+              <div className="w-5 h-4 md:w-6 md:h-5 rounded-[2px] bg-blue-700 text-white font-mono font-bold text-[8px] md:text-[9px] flex items-center justify-center shadow-inner border border-blue-900 leading-none">
+                OCT
+              </div>
+
+              {/* State Name Header */}
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`text-sm md:text-lg font-black tracking-widest font-sans ${
+                    plate.districtCode === 'CA' ? 'text-red-700 italic tracking-normal' : textColorClass
+                  }`}
+                >
+                  {plate.topLineText || (plate.districtName ? plate.districtName.toUpperCase() : 'CALIFORNIA')}
+                </span>
+              </div>
+
+              {/* Year Decal */}
+              <div className="w-5 h-4 md:w-6 md:h-5 rounded-[2px] bg-amber-400 text-black font-mono font-bold text-[8px] md:text-[9px] flex items-center justify-center shadow-inner border border-amber-600 leading-none">
+                26
+              </div>
+            </div>
+
+            {/* Center Row: Main Alphanumeric Registration Serial */}
+            <div className="flex items-center justify-center my-auto">
+              <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm text-3xl md:text-5xl`}>
+                {plate.normalizedPlate}
+              </span>
+            </div>
+
+            {/* Bottom Row: State Slogan */}
+            <div className="w-full flex items-center justify-center pb-0.5">
+              <span className={`text-[8px] md:text-[10px] font-bold tracking-widest uppercase opacity-80 ${textColorClass} truncate max-w-[90%]`}>
+                {plate.bottomLineText || 'THE GOLDEN STATE'}
+              </span>
             </div>
           </div>
         ) : (

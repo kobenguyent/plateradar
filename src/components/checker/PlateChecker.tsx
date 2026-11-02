@@ -101,6 +101,16 @@ const SAMPLES_BY_COUNTRY: Record<CountryCode, { label: string; plate: string }[]
     { label: 'Electric Vehicle Custom', plate: 'EV 2026' },
     { label: 'Turbo Custom', plate: 'TURBO' },
   ],
+  US: [
+    { label: 'California Standard (7SAM123)', plate: 'CA 7SAM123' },
+    { label: 'Texas Lone Star (ABC-1234)', plate: 'TX ABC-1234' },
+    { label: 'New York Empire State', plate: 'NY 123-ABCD' },
+    { label: 'Florida Sunshine State', plate: 'FL 12A-BCD' },
+    { label: 'Washington Evergreen State', plate: 'WA BCD-1234' },
+    { label: 'U.S. Diplomat (OFM)', plate: 'D 1234' },
+    { label: 'Federal GSA Fleet (G-Plate)', plate: 'G12-3456' },
+    { label: 'California Custom (CALI-EV)', plate: 'CALI-EV' },
+  ],
 };
 
 const PLACEHOLDER_BY_COUNTRY: Record<CountryCode, string> = {
@@ -112,6 +122,7 @@ const PLACEHOLDER_BY_COUNTRY: Record<CountryCode, string> = {
   VN: 'e.g. 30A-123.45, 51H-888.88, 80A-001.01, QA-12-34...',
   AU: 'e.g. NSW AA-12-BB, VIC 1AA-2BB, QLD 123-AA1...',
   NZ: 'e.g. ABC 123, AA 1234, KIWI, KOB 789...',
+  US: 'e.g. CA 7SAM123, TX ABC-1234, NY 123-ABCD, D 1234, G12-3456...',
 };
 
 export const PlateChecker: React.FC<PlateCheckerProps> = ({ 

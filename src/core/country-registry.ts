@@ -7,6 +7,7 @@ import { parseThaiPlate, findThaiProvince, getRandomThaiPlate } from './parser-t
 import { parseVietnamesePlate, findVietnameseProvince, getRandomVietnamesePlate } from './parser-vn';
 import { parseAustralianPlate, findAustralianState, getRandomAustralianPlate } from './parser-au';
 import { parseNewZealandPlate, getRandomNewZealandPlate } from './parser-nz';
+import { parseUSPlate, findUSState, getRandomUSPlate } from './parser-us';
 
 import { GERMAN_DISTRICTS } from '../data/districts-de';
 import { AUSTRIAN_DISTRICTS } from '../data/districts-at';
@@ -16,6 +17,7 @@ import { THAI_PROVINCES } from '../data/districts-th';
 import { VIETNAMESE_PROVINCES } from '../data/districts-vn';
 import { AUSTRALIAN_STATES } from '../data/districts-au';
 import { NZ_REGIONS } from '../data/districts-nz';
+import { US_STATES } from '../data/districts-us';
 
 export const SUPPORTED_COUNTRIES: CountryInfo[] = [
   {
@@ -90,6 +92,15 @@ export const SUPPORTED_COUNTRIES: CountryInfo[] = [
     description: 'Standard 3-letter + 3-digit series (ABC 123), legacy pre-2001 (AA 1234), and personalised custom KiwiPlates.',
     supportedCategoriesCount: 3,
   },
+  {
+    id: 'US',
+    name: 'United States',
+    nativeName: 'United States of America',
+    flag: '🇺🇸',
+    euroCode: 'USA',
+    description: 'All 50 states + Washington D.C., iconic state slogans (The Golden State, Lone Star, Empire State), GSA federal government plates, and U.S. Dept of State diplomatic registrations (OFM).',
+    supportedCategoriesCount: 5,
+  },
 ];
 
 export const CountryAdapters: Record<CountryCode, CountryAdapter> = {
@@ -157,6 +168,14 @@ export const CountryAdapters: Record<CountryCode, CountryAdapter> = {
     findDistrict: (code: string) => NZ_REGIONS.find((r) => r.code === code),
     getRandomPlate: getRandomNewZealandPlate,
   },
+  US: {
+    id: 'US',
+    info: SUPPORTED_COUNTRIES[8],
+    parse: (plate: string, overrides?: Partial<PlateParseResult>) => parseUSPlate(plate, overrides),
+    getDistricts: () => US_STATES,
+    findDistrict: (code: string) => findUSState(code),
+    getRandomPlate: getRandomUSPlate,
+  },
 };
 
 export function autoDetectCountry(input: string): CountryCode {
@@ -191,6 +210,18 @@ export function autoDetectCountry(input: string): CountryCode {
   // If Austrian police/military "BP 12345" or "BH 12345"
   if (/^(BH|BP)[- ]?[0-9]{4,6}$/.test(upper)) {
     return 'AT';
+  }
+  // If U.S. Federal Government G-plate: G12-3456
+  if (/^G[0-9]{2}[- ]?[0-9]{3,5}$/.test(upper)) {
+    return 'US';
+  }
+  // If U.S. State explicit prefix (e.g. CA 7SAM123, TX ABC-1234, NY ABC-1234, FL 12A-BCD)
+  if (/^(CA|TX|NY|FL|IL|PA|OH|MI|GA|NC|NJ|VA|WA|AZ|MA|CO)\s+[A-Z0-9]/i.test(upper)) {
+    return 'US';
+  }
+  // If California 7-character standard pattern (1 digit + 3 letters + 3 digits, e.g. 7SAM123)
+  if (/^[0-9][A-Z]{3}[0-9]{3}$/.test(upper)) {
+    return 'US';
   }
   // If New Zealand: ABC 123
   if (/^[A-Z]{3}[- ]?[0-9]{3}$/.test(upper)) {
