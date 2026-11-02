@@ -15,15 +15,15 @@ export function findGermanDistrict(code: string) {
 
 export function parseGermanPlate(input: string, userOverrides?: Partial<PlateParseResult>): PlateParseResult {
   const rawInput = input;
-  // Clean input: remove redundant spaces, dashes, dots, normalize uppercase
-  const cleaned = input.trim().toUpperCase();
+  // Clean input: remove redundant spaces, uppercase
+  const rawCleaned = input.trim().toUpperCase().replace(/\s+/g, ' ');
   const errors: string[] = [];
 
   // Default base result
   const baseResult: PlateParseResult = {
     country: 'DE',
     rawInput,
-    normalizedPlate: cleaned,
+    normalizedPlate: rawCleaned,
     isValid: false,
     category: 'unknown',
     categoryName: 'Unknown',
@@ -44,9 +44,31 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
     badgeStateCode: 'bundesadler',
   };
 
-  if (!cleaned) {
+  if (!rawCleaned) {
     errors.push('Please enter a license plate string.');
     return baseResult;
+  }
+
+  // Smart OCR/Keyboard normalization:
+  // In Germany, there is no single-letter district "O".
+  // A leading letter "O" followed by space/dash and digits (e.g. "O 320 320", "O-1", "O 17 1")
+  // represents the diplomatic/official digit "0" (Zero).
+  let cleaned = rawCleaned;
+  let normalizedNotice: string | undefined = undefined;
+  let alternateSuggestion: PlateParseResult['alternateSuggestion'] = undefined;
+
+  // Check if this could also be Austrian Oberösterreich (code 'O')
+  if (/^O[ -][0-9]/i.test(rawCleaned)) {
+    alternateSuggestion = {
+      country: 'AT',
+      label: 'Looking for Austrian plate? In Austria, "O" represents the state of Oberösterreich (O 320 320).',
+      query: rawCleaned,
+    };
+  }
+
+  if (/^O([ -]?[0-9])/i.test(rawCleaned)) {
+    cleaned = rawCleaned.replace(/^O/i, '0');
+    normalizedNotice = `Interpreted letter "O" as digit "0" (Official Diplomatic / Constitutional Authority plate).`;
   }
 
   // 1. Highest Federal Officials (e.g. 0-1, 0-2, 0-3, 0-4)
@@ -69,6 +91,8 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
       badgeStateCode: 'bundesadler',
       specialPerks: ['Special right of way in official escort (§ 35/38 StVO)', 'Exempt from toll and environmental zone regulations'],
       legalBasis: '§ 8 Abs. 1 FZV Anlage 2 (Oberste Bundesorgane)',
+      normalizedNotice,
+      alternateSuggestion,
     };
   }
 
@@ -311,30 +335,43 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
     }
   }
 
-  // 10. Diplomatic Corps Ambassador Plate (0 [CountryCode]-[Rank/Serial], e.g. 0 17-1 or 0 17 1)
-  const diplomatAmbassadorMatch = cleaned.match(/^0[- ]?([0-9]{2,3})[- ]?([0-9]{1,3})$/);
+  // 10. Diplomatic Corps & International Organizations (0 [Country/Org Code]-[Serial], e.g. "0 17-1", "0 320 320", "0-320-320")
+  const diplomatAmbassadorMatch = cleaned.match(/^0[- ]?([0-9]{2,3})[- /]?([0-9]{1,4})$/);
   if (diplomatAmbassadorMatch) {
     const countryCode = diplomatAmbassadorMatch[1];
     const serial = diplomatAmbassadorMatch[2];
     const country = GERMAN_DIPLOMATIC_CODES[countryCode];
     const isAmbassador = serial === '1';
+    const isIntergovernmental = parseInt(countryCode, 10) >= 300 || (parseInt(countryCode, 10) >= 156 && parseInt(countryCode, 10) <= 199);
+
+    const desc = isIntergovernmental
+      ? `Official service vehicle of the ${country ? country.country : `International Agency Code ${countryCode}`}. ${isAmbassador ? 'Allocated to the Head of Organization/Agency.' : `Serial identifier: ${serial}.`}`
+      : `Official diplomatic vehicle assigned to ${country ? country.country : `Country Code ${countryCode}`}. ${isAmbassador ? 'Number "1" identifies this as the official vehicle of the Ambassador (Head of Mission).' : `Rank/serial identifier: ${serial}.`}`;
 
     return {
       ...baseResult,
       isValid: true,
       category: 'diplomatic',
-      categoryName: 'Diplomatic Mission (Corps Diplomatique)',
-      categoryNameDe: 'Diplomatenkennzeichen (Botschaftsfahrzeug)',
-      categoryDescription: `Official diplomatic vehicle assigned to ${country ? country.country : `Country Code ${countryCode}`}. ${isAmbassador ? 'Number "1" identifies this as the official vehicle of the Ambassador (Head of Mission).' : `Rank/serial identifier: ${serial}.`}`,
+      categoryName: isIntergovernmental ? 'Intergovernmental Organization / EU Agency' : 'Diplomatic Mission (Corps Diplomatique)',
+      categoryNameDe: isIntergovernmental ? 'Internationale Organisation / EU-Behörde' : 'Diplomatenkennzeichen (Botschaftsfahrzeug)',
+      categoryDescription: desc,
       normalizedPlate: `0 ${countryCode}-${serial}`,
       districtCode: '0',
-      districtName: 'Diplomatisches Korps (Auswärtiges Amt)',
+      districtName: isIntergovernmental ? `${country ? country.country : 'International Organization'}` : 'Diplomatisches Korps (Auswärtiges Amt)',
       state: 'Bund',
       stateCode: 'bundesadler',
       badgeStateCode: 'bundesadler',
-      diplomaticInfo: country ? { ...country, role: isAmbassador ? 'Ambassador / Head of Mission' : 'Diplomatic Staff' } : undefined,
-      specialPerks: ['Diplomatic immunity and protection under the Vienna Convention on Diplomatic Relations (VCDR)', 'Exempt from vehicle tax and municipal parking fees in embassy zones'],
-      legalBasis: '§ 8 Abs. 1 Satz 5 FZV (Diplomatisches Korps)',
+      numberPart: `${countryCode}-${serial}`,
+      diplomaticInfo: country ? { ...country, role: isAmbassador ? (isIntergovernmental ? 'Head of Agency' : 'Ambassador / Head of Mission') : 'Official Vehicle' } : undefined,
+      specialPerks: [
+        isIntergovernmental
+          ? 'Diplomatic status & tax immunity under the International Agency Headquarters Agreement (Sitzabkommen) and Vienna Convention'
+          : 'Diplomatic immunity and protection under the Vienna Convention on Diplomatic Relations (VCDR)',
+        'Exempt from motor vehicle tax and municipal parking fees in embassy/agency zones',
+      ],
+      legalBasis: '§ 8 Abs. 1 Satz 5 FZV (Diplomatisches Korps & Internationale Organisationen)',
+      normalizedNotice,
+      alternateSuggestion,
     };
   }
 
@@ -419,13 +456,14 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
   }
 
   // 14. Standard, Electric, Historic, Seasonal, Combinations (E, H, Saison 04/10, E 04/10, H 04/10)
-  // General format: [1-3 District letters] [1-3 Middle letters] [1-5 Numbers] [Optional E or H suffix] [Optional Season XX/YY]
-  const standardPattern = /^([A-ZÄÖÜ]{1,3})[- ]?([A-ZÄÖÜ]{1,3})[- ]?([0-9]{1,5})[- ]?([EH])?(?:[- /]?([0-1][0-9])[- /]?([0-1][0-9]))?$/;
+  // General format: [1-3 District letters] [Optional 1-3 Middle letters] [1-5 Numbers] [Optional E or H suffix] [Optional Season XX/YY]
+  // Flexible regex allowing middle letters to be optional (e.g. municipal official vehicles like "B 1234")
+  const standardPattern = /^([A-ZÄÖÜ]{1,3})[- ]?(?:([A-ZÄÖÜ]{1,3})[- ])?([0-9]{1,5})[- ]?([EH])?(?:[- /]?([0-1][0-9])[- /]?([0-1][0-9]))?$/;
   const match = cleaned.match(standardPattern);
 
   if (match) {
     const distCode = match[1];
-    const middle = match[2];
+    const middle = match[2] || '';
     const num = match[3];
     const suffix = match[4]; // 'E' or 'H' or undefined
     const seasonStart = match[5] ? parseInt(match[5], 10) : undefined;
@@ -441,6 +479,7 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
         numberPart: num,
         suffix,
         errors,
+        alternateSuggestion,
       };
     }
 
@@ -457,7 +496,7 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
     }
 
     // Check prohibited combinations
-    const prohibitedReason = checkProhibitedGermanPlate(distCode, middle, num);
+    const prohibitedReason = middle ? checkProhibitedGermanPlate(distCode, middle, num) : null;
 
     // Determine category
     let category: PlateCategory = 'standard';
@@ -528,7 +567,7 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
       catDesc = 'Pre-1995 German license plate without blue EU strip, utilizing the historic DIN 1451 font. Grandfathered on continuous registrations.';
     }
 
-    const norm = `${distCode} ${middle} ${num}${suffix ? ` ${suffix}` : ''}${seasonStart && seasonEnd ? ` ${String(seasonStart).padStart(2, '0')}/${String(seasonEnd).padStart(2, '0')}` : ''}`;
+    const norm = `${distCode}${middle ? ` ${middle}` : ''} ${num}${suffix ? ` ${suffix}` : ''}${seasonStart && seasonEnd ? ` ${String(seasonStart).padStart(2, '0')}/${String(seasonEnd).padStart(2, '0')}` : ''}`;
 
     return {
       ...baseResult,
@@ -543,7 +582,7 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
       state: dist.state,
       stateCode: dist.stateCode,
       badgeStateCode: dist.stateCode,
-      middleLetters: middle,
+      middleLetters: middle || undefined,
       numberPart: num,
       suffix,
       seasonStart,
@@ -556,12 +595,17 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
       legalBasis: suffix === 'H' ? '§ 23 StVZO / § 9 Abs. 1 FZV' : suffix === 'E' ? '§ 9 Abs. 2 FZV / EmoG' : seasonStart ? '§ 9 Abs. 3 FZV' : '§ 8 FZV (Fahrzeug-Zulassungsverordnung)',
       prohibitedWarning: prohibitedReason || undefined,
       errors,
+      normalizedNotice,
+      alternateSuggestion,
     };
   }
 
   // If no pattern matched
-  errors.push(`Could not parse plate format "${cleaned}". Typical German plate format: "B MW 1234", "M AB 123 E", "HH CL 70 H", "0 17-1", "Y-123456", "THW-81234".`);
-  return baseResult;
+  errors.push(`Could not parse plate format "${cleaned}". Typical German plate format: "B MW 1234", "M AB 123 E", "HH CL 70 H", "0 17-1", "0 320 320", "Y-123456".`);
+  return {
+    ...baseResult,
+    alternateSuggestion,
+  };
 }
 
 export function getRandomGermanPlate(): { plate: string; category: PlateCategory } {
@@ -576,6 +620,7 @@ export function getRandomGermanPlate(): { plate: string; category: PlateCategory
     { plate: 'B 06123', category: 'dealer_collector_red' },
     { plate: 'DAH GT 500', category: 'standard' },
     { plate: '0 17-1', category: 'diplomatic' },
+    { plate: '0 320 320', category: 'diplomatic' },
     { plate: 'B 35-123', category: 'diplomatic' },
     { plate: 'Y-482195', category: 'federal_armed_forces' },
     { plate: 'BP 18-450', category: 'federal_police' },

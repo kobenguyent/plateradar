@@ -141,7 +141,7 @@ describe('German License Plate Parser (parseGermanPlate)', () => {
     });
   });
 
-  describe('Diplomatic Missions', () => {
+  describe('Diplomatic Missions & International Organizations', () => {
     it('identifies Ambassador diplomatic plate (0 17-1)', () => {
       const res = parseGermanPlate('0 17-1');
       expect(res.isValid).toBe(true);
@@ -155,6 +155,32 @@ describe('German License Plate Parser (parseGermanPlate)', () => {
       expect(res.isValid).toBe(true);
       expect(res.category).toBe('diplomatic');
       expect(res.diplomaticInfo?.country).toBe('France');
+    });
+
+    it('parses "0 320 320" as AMLA (EU Anti-Money Laundering Authority)', () => {
+      const res = parseGermanPlate('0 320 320');
+      expect(res.isValid).toBe(true);
+      expect(res.category).toBe('diplomatic');
+      expect(res.diplomaticInfo?.code).toBe('320');
+      expect(res.diplomaticInfo?.country).toContain('AMLA');
+      expect(res.normalizedPlate).toBe('0 320-320');
+    });
+
+    it('parses "O 320 320" by normalizing letter O to digit 0 and recognizing AMLA', () => {
+      const res = parseGermanPlate('O 320 320');
+      expect(res.isValid).toBe(true);
+      expect(res.category).toBe('diplomatic');
+      expect(res.diplomaticInfo?.code).toBe('320');
+      expect(res.diplomaticInfo?.country).toContain('AMLA');
+      expect(res.normalizedNotice).toBeDefined();
+      expect(res.alternateSuggestion?.country).toBe('AT');
+    });
+
+    it('parses "O 17 1" by normalizing letter O to digit 0 for US ambassador', () => {
+      const res = parseGermanPlate('O 17 1');
+      expect(res.isValid).toBe(true);
+      expect(res.category).toBe('diplomatic');
+      expect(res.diplomaticInfo?.country).toBe('United States of America');
     });
   });
 

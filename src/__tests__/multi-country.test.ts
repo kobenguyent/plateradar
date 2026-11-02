@@ -23,6 +23,15 @@ describe('Multi-Country Extensible Architecture', () => {
       expect(res.hasEuroBand).toBe(true);
     });
 
+    it('parses Austrian state plate O 320 320 (Oberösterreich)', () => {
+      const res = at.parse('O 320 320');
+      expect(res.isValid).toBe(true);
+      expect(res.country).toBe('AT');
+      expect(res.districtCode).toBe('O');
+      expect(res.districtName).toBe('Oberösterreich');
+      expect(res.state).toBe('Oberösterreich');
+    });
+
     it('parses Austrian electric plates with green font', () => {
       const res = at.parse('L 4040 E');
       expect(res.isValid).toBe(true);

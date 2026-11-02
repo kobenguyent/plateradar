@@ -5,7 +5,6 @@ import { PlateRenderer } from '../plate/PlateRenderer';
 import { 
   CheckCircle2, 
   AlertTriangle, 
-  XCircle, 
   ShieldCheck, 
   Zap, 
   Clock, 
@@ -13,19 +12,26 @@ import {
   Info, 
   Building2, 
   Calendar,
-  Share2,
   Copy,
-  Check
+  Check,
+  Globe2,
+  ArrowRight
 } from 'lucide-react';
 
 interface PlateCheckerProps {
   country: CountryCode;
+  initialValue?: string;
   onSelectDistrict?: (code: string) => void;
+  onSwitchCountry?: (country: CountryCode, query: string) => void;
 }
 
-export const PlateChecker: React.FC<PlateCheckerProps> = ({ country }) => {
+export const PlateChecker: React.FC<PlateCheckerProps> = ({ 
+  country, 
+  initialValue = 'B MW 1234 E',
+  onSwitchCountry 
+}) => {
   const adapter = CountryAdapters[country];
-  const [inputVal, setInputVal] = useState<string>('B MW 1234 E');
+  const [inputVal, setInputVal] = useState<string>(initialValue);
   const [copied, setCopied] = useState<boolean>(false);
 
   // Parse plate dynamically
@@ -34,6 +40,7 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({ country }) => {
   const quickSamples = [
     { label: 'Electric (E)', plate: 'B MW 1234 E' },
     { label: 'Historic Oldtimer (H)', plate: 'M CL 1972 H' },
+    { label: 'AMLA EU Agency (320)', plate: '0 320 320' },
     { label: 'Seasonal (Cabrio)', plate: 'HH SP 911 04/10' },
     { label: '5-Day Transfer (Yellow)', plate: 'B 04123 28/11/26' },
     { label: 'Export (Red)', plate: 'M 4567 A 15/06/27' },
@@ -67,10 +74,10 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({ country }) => {
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               <ShieldCheck className="w-6 h-6 text-blue-400" />
-              Plate Inspector & Live Decoder
+              Plate Inspector & Live Decoder ({adapter.info.name})
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Type any vehicle license plate or choose a preset to inspect its district, category, legal status, and privileges.
+              Type any vehicle license plate (e.g. standard, diplomatic, or international organizations like <strong className="text-slate-300">0 320 320</strong>) to inspect its district, category, legal status, and privileges.
             </p>
           </div>
           <button
@@ -83,12 +90,12 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({ country }) => {
         </div>
 
         {/* Big Input Field */}
-        <div className="relative mb-8">
+        <div className="relative mb-6">
           <input
             type="text"
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
-            placeholder="e.g. B MW 1234 E, 0 17-1, Y-123456..."
+            placeholder="e.g. B MW 1234 E, 0 320 320, 0 17-1, Y-123456..."
             className="w-full bg-slate-900/90 border-2 border-slate-700 focus:border-blue-500 text-white font-mono text-2xl md:text-3xl px-5 py-4 rounded-xl shadow-inner focus:outline-none transition uppercase tracking-wider"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -102,6 +109,30 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({ country }) => {
           </div>
         </div>
 
+        {/* Friendly Normalization Notice */}
+        {parseResult.normalizedNotice && (
+          <div className="mb-6 p-3 bg-blue-950/40 border border-blue-700/50 rounded-xl flex items-center gap-2 text-xs md:text-sm text-blue-200">
+            <Info className="w-4 h-4 text-blue-400 shrink-0" />
+            <span>{parseResult.normalizedNotice}</span>
+          </div>
+        )}
+
+        {/* Cross-Country Alternate Suggestion Banner */}
+        {parseResult.alternateSuggestion && onSwitchCountry && (
+          <div className="mb-6 p-3.5 bg-indigo-950/50 border border-indigo-600/50 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs md:text-sm text-indigo-200">
+            <div className="flex items-center gap-2">
+              <Globe2 className="w-4 h-4 text-indigo-400 shrink-0" />
+              <span>{parseResult.alternateSuggestion.label}</span>
+            </div>
+            <button
+              onClick={() => onSwitchCountry(parseResult.alternateSuggestion!.country, parseResult.alternateSuggestion!.query)}
+              className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0"
+            >
+              Switch Country <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Realistic Interactive License Plate Display */}
         <div className="py-6 flex flex-col items-center justify-center bg-slate-950/60 rounded-xl border border-slate-800/80 p-4">
           <span className="text-xs uppercase font-semibold text-slate-400 tracking-wider mb-4">
@@ -113,7 +144,7 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({ country }) => {
         {/* Quick Sample Presets */}
         <div className="mt-6">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 block">
-            Explore All German License Plate Types:
+            Explore Preset License Plate Types:
           </span>
           <div className="flex flex-wrap gap-2">
             {quickSamples.map((sample) => (
@@ -201,17 +232,22 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({ country }) => {
               </span>
             </div>
             <div className="flex justify-between items-center py-1 border-b border-slate-700/50">
-              <span className="text-slate-400">Federal State:</span>
+              <span className="text-slate-400">Federal State / Authority:</span>
               <span className="font-semibold text-white">{parseResult.state || 'Federal (Bund)'}</span>
             </div>
             {parseResult.diplomaticInfo && (
-              <div className="py-2 bg-blue-950/50 border border-blue-800/60 rounded-lg p-2.5 mt-2">
-                <span className="text-xs uppercase font-bold text-blue-300 block mb-1">Diplomatic Accreditation</span>
+              <div className="py-2.5 bg-blue-950/50 border border-blue-800/60 rounded-xl p-3 mt-2">
+                <span className="text-xs uppercase font-bold text-blue-300 block mb-1">Diplomatic Accreditation / Agency</span>
                 <div className="flex items-center gap-2 text-white font-medium">
                   <span className="text-xl">{parseResult.diplomaticInfo.flag}</span>
-                  <span>{parseResult.diplomaticInfo.country}</span>
+                  <span className="text-sm font-semibold">{parseResult.diplomaticInfo.country}</span>
                 </div>
-                <span className="text-xs text-slate-400 block mt-0.5">{parseResult.diplomaticInfo.role}</span>
+                <div className="text-xs text-blue-200/90 mt-1 leading-snug">
+                  {parseResult.diplomaticInfo.countryDe}
+                </div>
+                {parseResult.diplomaticInfo.role && (
+                  <span className="text-[11px] text-slate-400 block mt-1">Role: {parseResult.diplomaticInfo.role}</span>
+                )}
               </div>
             )}
             <div className="flex justify-between items-center py-1">
@@ -246,7 +282,7 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({ country }) => {
             </ul>
           ) : (
             <p className="text-sm text-slate-400 leading-relaxed">
-              Standard German road vehicle registration. Requires annual or biennial Hauptuntersuchung (HU/TÜV) inspection and valid third-party liability insurance (Kfz-Haftpflicht).
+              Standard vehicle registration. Requires regular Hauptuntersuchung (HU/TÜV) inspection and valid motor vehicle liability insurance.
             </p>
           )}
 

@@ -19,6 +19,13 @@ export const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleSwitchCountry = (country: CountryCode, query: string) => {
+    setSelectedCountry(country);
+    setPrefilledPlate(query);
+    setActiveTab('checker');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex flex-col font-sans">
       <Header
@@ -33,7 +40,9 @@ export const App: React.FC = () => {
           <PlateChecker
             key={`${selectedCountry}-${prefilledPlate}`}
             country={selectedCountry}
+            initialValue={prefilledPlate}
             onSelectDistrict={(code) => handleInspectFromDirectory(`${code} AB 123`)}
+            onSwitchCountry={handleSwitchCountry}
           />
         )}
 

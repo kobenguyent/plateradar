@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { CountryCode, District } from '../../types';
 import { CountryAdapters } from '../../core/country-registry';
-import { Search, MapPin, Building, Filter, ExternalLink, Sparkles, BookOpen } from 'lucide-react';
+import { GERMAN_DIPLOMATIC_CODES } from '../../data/diplomatic-codes-de';
+import { Search, MapPin, Building, BookOpen, ExternalLink } from 'lucide-react';
 
 interface DistrictDirectoryProps {
   country: CountryCode;
@@ -10,29 +11,59 @@ interface DistrictDirectoryProps {
 
 export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, onInspectPlate }) => {
   const adapter = CountryAdapters[country];
-  const allDistricts = adapter.getDistricts();
+  
+  // Base geographic districts
+  const baseDistricts = adapter.getDistricts();
+
+  // If Germany, also enrich with Diplomatic & International Agency codes (320 AMLA, 17 USA, etc.)
+  const allEntries: (District & { isDiplomatic?: boolean; samplePlate?: string })[] = useMemo(() => {
+    if (country !== 'DE') {
+      return baseDistricts;
+    }
+
+    const diplomaticEntries = Object.values(GERMAN_DIPLOMATIC_CODES).map((d) => ({
+      code: `0 ${d.code}`,
+      name: d.country,
+      state: 'Diplomatisches Korps / Bund',
+      stateCode: 'bundesadler',
+      fullName: `${d.flag} ${d.countryDe}`,
+      isDiplomatic: true,
+      samplePlate: `0 ${d.code}-1`,
+    }));
+
+    return [...baseDistricts, ...diplomaticEntries];
+  }, [country, baseDistricts]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedState, setSelectedState] = useState<string>('all');
-  const [filterHistorical, setFilterHistorical] = useState<'all' | 'active' | 'historical'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'active' | 'historical' | 'diplomatic'>('all');
 
   // Extract unique states for filter tabs
   const states = useMemo(() => {
     const set = new Set<string>();
-    for (const d of allDistricts) {
+    for (const d of allEntries) {
       if (d.state) set.add(d.state);
     }
     return Array.from(set).sort();
-  }, [allDistricts]);
+  }, [allEntries]);
 
   // Filtered districts
   const filteredDistricts = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    return allDistricts.filter((d) => {
-      // Search matches
+    let q = searchQuery.trim().toLowerCase();
+    // Normalize 'O 320' to '0 320' for diplomatic queries
+    if (/^o\s*[0-9]/i.test(q)) {
+      q = q.replace(/^o/i, '0');
+    }
+
+    return allEntries.filter((d) => {
+      // Search matches (checks code without spaces or formatted)
+      const cleanCode = d.code.toLowerCase().replace(/\s+/g, '');
+      const cleanQ = q.replace(/\s+/g, '');
+
       const matchesSearch =
         !q ||
         d.code.toLowerCase().includes(q) ||
+        cleanCode.includes(cleanQ) ||
         d.name.toLowerCase().includes(q) ||
         d.fullName.toLowerCase().includes(q) ||
         d.state.toLowerCase().includes(q);
@@ -40,15 +71,16 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
       // State matches
       const matchesState = selectedState === 'all' || d.state === selectedState;
 
-      // Historical matches
-      const matchesHistorical =
-        filterHistorical === 'all' ||
-        (filterHistorical === 'historical' && d.isHistorical) ||
-        (filterHistorical === 'active' && !d.isHistorical);
+      // Filter matches
+      const matchesType =
+        filterType === 'all' ||
+        (filterType === 'historical' && d.isHistorical) ||
+        (filterType === 'active' && !d.isHistorical && !d.isDiplomatic) ||
+        (filterType === 'diplomatic' && d.isDiplomatic);
 
-      return matchesSearch && matchesState && matchesHistorical;
+      return matchesSearch && matchesState && matchesType;
     });
-  }, [allDistricts, searchQuery, selectedState, filterHistorical]);
+  }, [allEntries, searchQuery, selectedState, filterType]);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -58,16 +90,16 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               <BookOpen className="w-6 h-6 text-blue-400" />
-              {adapter.info.name} District Code Directory
+              {adapter.info.name} District Code &amp; Agency Directory
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Browse and search through all {allDistricts.length} official vehicle registration districts (Unterscheidungszeichen).
+              Browse and search through all {allEntries.length} official registration districts, international agencies (e.g. 320 AMLA), and diplomatic codes.
             </p>
           </div>
           <div className="flex items-center gap-2 bg-slate-900/80 px-3.5 py-1.5 rounded-xl border border-slate-700 text-xs text-slate-300 font-mono">
             <span>Showing:</span>
             <span className="font-bold text-blue-400 text-sm">{filteredDistricts.length}</span>
-            <span>/ {allDistricts.length}</span>
+            <span>/ {allEntries.length}</span>
           </div>
         </div>
 
@@ -79,7 +111,7 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by code (e.g. B, M, HH, DAH) or city name..."
+              placeholder="Search by code (e.g. B, 0 320, M, DAH) or city / agency name..."
               className="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 rounded-xl pl-11 pr-4 py-2.5 text-white placeholder-slate-500 text-sm focus:outline-none transition"
             />
           </div>
@@ -90,7 +122,7 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
               onChange={(e) => setSelectedState(e.target.value)}
               className="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none transition"
             >
-              <option value="all">All Federal States ({states.length})</option>
+              <option value="all">All States &amp; Jurisdictions ({states.length})</option>
               {states.map((st) => (
                 <option key={st} value={st}>
                   {st}
@@ -101,13 +133,14 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
 
           <div className="md:col-span-3">
             <select
-              value={filterHistorical}
-              onChange={(e) => setFilterHistorical(e.target.value as any)}
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as any)}
               className="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none transition"
             >
-              <option value="all">All District Types</option>
+              <option value="all">All Classifications</option>
               <option value="active">Active Primary Districts</option>
-              <option value="historical">Historic / Re-introduced Codes</option>
+              <option value="historical">Historic / Liberalized Codes</option>
+              {country === 'DE' && <option value="diplomatic">Diplomatic &amp; Agency Codes (0 XX)</option>}
             </select>
           </div>
         </div>
@@ -122,6 +155,8 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
             ? `./badges/at/${district.stateCode}.svg`
             : `./badges/de/${district.stateCode}.svg`;
 
+          const inspectCode = district.samplePlate || `${district.code} AB 123`;
+
           return (
             <div
               key={district.code}
@@ -130,7 +165,11 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
               <div>
                 <div className="flex items-center justify-between mb-2">
                   {/* Plate Code Tag with FE-Schrift style */}
-                  <span className="font-mono font-bold text-2xl text-white bg-slate-950 px-3 py-1 rounded-lg border border-slate-700 group-hover:border-blue-500 transition shadow-inner">
+                  <span className={`font-mono font-bold text-2xl px-3 py-1 rounded-lg border shadow-inner ${
+                    district.isDiplomatic 
+                      ? 'bg-blue-950 text-blue-300 border-blue-700' 
+                      : 'bg-slate-950 text-white border-slate-700 group-hover:border-blue-500 transition'
+                  }`}>
                     {district.code}
                   </span>
 
@@ -162,7 +201,7 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
                 </span>
 
                 <button
-                  onClick={() => onInspectPlate(`${district.code} AB 123`)}
+                  onClick={() => onInspectPlate(inspectCode)}
                   className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-500/10 hover:bg-blue-500/20 transition"
                 >
                   Inspect <ExternalLink className="w-3 h-3" />
@@ -184,7 +223,7 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
             onClick={() => {
               setSearchQuery('');
               setSelectedState('all');
-              setFilterHistorical('all');
+              setFilterType('all');
             }}
             className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition"
           >

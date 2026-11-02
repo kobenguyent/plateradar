@@ -87,6 +87,12 @@ export interface PlateParseResult {
   prohibitedWarning?: string;
   errors: string[];
   fontType: 'FE' | 'DIN';
+  normalizedNotice?: string;
+  alternateSuggestion?: {
+    country: CountryCode;
+    label: string;
+    query: string;
+  };
 }
 
 export interface CountryAdapter {

@@ -91,7 +91,34 @@ export const GERMAN_DIPLOMATIC_CODES: Record<string, DiplomaticMission> = {
   '118': { code: '118', country: 'Estonia', countryDe: 'Estland', flag: '🇪🇪' },
   '119': { code: '119', country: 'Latvia', countryDe: 'Lettland', flag: '🇱🇻' },
   '120': { code: '120', country: 'Lithuania', countryDe: 'Litauen', flag: '🇱🇹' },
-  '156': { code: '156', country: 'European Union / Delegation', countryDe: 'Europäische Union (Vertretung der EU-Kommission)', flag: '🇪🇺' },
+
+  // International & Intergovernmental Organizations (156, 160-199, 300-399)
+  '156': { code: '156', country: 'European Union Delegation', countryDe: 'Europäische Kommission / Vertretung der EU in Deutschland', flag: '🇪🇺' },
+  '160': { code: '160', country: 'OSCE', countryDe: 'Organisation für Sicherheit und Zusammenarbeit in Europa (OSZE)', flag: '🌐' },
+  '161': { code: '161', country: 'ECMWF', countryDe: 'Europäisches Zentrum für mittelfristige Wettervorhersage (EZMW)', flag: '🇪🇺' },
+  '162': { code: '162', country: 'IOM', countryDe: 'Internationale Organisation für Migration', flag: '🌐' },
+  '163': { code: '163', country: 'ESA', countryDe: 'Europäische Weltraumorganisation (ESA / ESOC Darmstadt)', flag: '🇪🇺' },
+  '164': { code: '164', country: 'EPO / EPA', countryDe: 'Europäisches Patentamt (München)', flag: '🇪🇺' },
+  '165': { code: '165', country: 'EMBL', countryDe: 'Europäisches Laboratorium für Molekularbiologie (Heidelberg)', flag: '🇪🇺' },
+  '166': { code: '166', country: 'UNHCR', countryDe: 'Hoher Flüchtlingskommissar der Vereinten Nationen', flag: '🇺🇳' },
+  '167': { code: '167', country: 'ILO / IAO', countryDe: 'Internationale Arbeitsorganisation', flag: '🇺🇳' },
+  '168': { code: '168', country: 'UNESCO', countryDe: 'UNESCO-Institut für Lebenslanges Lernen (Hamburg)', flag: '🇺🇳' },
+  '169': { code: '169', country: 'UNU', countryDe: 'Universität der Vereinten Nationen (UNU / EHS Bonn)', flag: '🇺🇳' },
+  '170': { code: '170', country: 'UNFCCC', countryDe: 'Klimasekretariat der Vereinten Nationen (UNFCCC Bonn)', flag: '🇺🇳' },
+  '171': { code: '171', country: 'UNCCD', countryDe: 'Sekretariat des UN-Übereinkommens zur Wüstenbekämpfung (Bonn)', flag: '🇺🇳' },
+  '172': { code: '172', country: 'UNV', countryDe: 'Freiwilligenprogramm der Vereinten Nationen (UNV Bonn)', flag: '🇺🇳' },
+  '174': { code: '174', country: 'UNEP / CMS', countryDe: 'Übereinkommen zur Erhaltung wandernder wild lebender Tierarten (Bonner Konvention)', flag: '🇺🇳' },
+  '176': { code: '176', country: 'IPBES', countryDe: 'Weltbiodiversitätsrat (IPBES Bonn)', flag: '🇺🇳' },
+
+  // 300-399 International Organizations & European Agencies
+  '300': { code: '300', country: 'UNEP / TEEB', countryDe: 'Ökonomie der Ökosysteme und Biodiversität (UNEP/TEEB Bonn)', flag: '🇺🇳' },
+  '301': { code: '301', country: 'IRENA', countryDe: 'Internationale Organisation für Erneuerbare Energien (IITC Bonn)', flag: '🌐' },
+  '302': { code: '302', country: 'GCDT', countryDe: 'Welttreuhandfonds für Kulturpflanzenvielfalt (Global Crop Diversity Trust Bonn)', flag: '🌐' },
+  '303': { code: '303', country: 'UN SDG Action Campaign', countryDe: 'UN SDG Action-Campaign-Zentrum für globale Aktionskampagne (Bonn)', flag: '🇺🇳' },
+  '304': { code: '304', country: 'UNDP oneHR', countryDe: 'Globales Zentrum für Personaldienste der Vereinten Nationen (Bonn)', flag: '🇺🇳' },
+  '311': { code: '311', country: 'ITER', countryDe: 'Internationale Fusionsenergie-Organisation (ITER)', flag: '🌐' },
+  '319': { code: '319', country: 'EPO / EPA', countryDe: 'Europäische Patentorganisation (München/Berlin)', flag: '🇪🇺' },
+  '320': { code: '320', country: 'AMLA (EU Anti-Money Laundering Authority)', countryDe: 'Europäische Behörde zur Bekämpfung von Geldwäsche und Terrorismusfinanzierung (AMLA, Frankfurt am Main)', flag: '🇪🇺' },
 };
 
 export const GERMAN_HIGHEST_OFFICIALS: Record<string, string> = {

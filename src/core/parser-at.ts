@@ -12,7 +12,7 @@ export function findAustrianDistrict(code: string) {
 
 export function parseAustrianPlate(input: string, userOverrides?: Partial<PlateParseResult>): PlateParseResult {
   const rawInput = input;
-  const cleaned = input.trim().toUpperCase();
+  const cleaned = input.trim().toUpperCase().replace(/\s+/g, ' ');
   const errors: string[] = [];
 
   const baseResult: PlateParseResult = {
@@ -68,12 +68,13 @@ export function parseAustrianPlate(input: string, userOverrides?: Partial<PlateP
     };
   }
 
-  // Standard Austrian Plate format: [1-2 Letter District] [3-6 Numbers & Letters]
+  // Standard Austrian Plate format:
   // e.g. "W 12345 A", "S 456 BC", "MD 789 EF", "L 100 EV"
-  const standardMatch = cleaned.match(/^([A-Z]{1,2})[- ]?([0-9]{1,5})[- ]?([A-Z]{1,3})$|^([A-Z]{1,2})[- ]?([0-9]{3,6})$/);
+  // Or Official State Plates / Numbers: "O 320 320", "O 1", "W 123456"
+  const standardMatch = cleaned.match(/^([A-Z]{1,2})[- ]?([0-9]{1,5})[- ]?([A-Z]{1,3})$|^([A-Z]{1,2})[- ]?([0-9]{1,3})[- ]?([0-9]{1,4})$|^([A-Z]{1,2})[- ]?([0-9]{1,6})$/);
   if (standardMatch) {
-    const distCode = standardMatch[1] || standardMatch[4];
-    const num = standardMatch[2] || standardMatch[5];
+    const distCode = standardMatch[1] || standardMatch[4] || standardMatch[7];
+    const num = standardMatch[2] || (standardMatch[5] ? `${standardMatch[5]} ${standardMatch[6]}` : standardMatch[8]);
     const letters = standardMatch[3] || '';
 
     const dist = findAustrianDistrict(distCode);
@@ -86,35 +87,52 @@ export function parseAustrianPlate(input: string, userOverrides?: Partial<PlateP
     const isElectric = userOverrides?.textColor === 'green' || userOverrides?.category === 'electric' || letters.endsWith('E') || letters.endsWith('EV');
     const textColor = isElectric ? 'green' : 'black';
 
+    // State leadership plate (e.g. O 1, O 320 320, W 1)
+    const isStateGov = ['O', 'W', 'N', 'ST', 'K', 'S', 'T', 'B', 'V'].includes(distCode) && !letters;
+
     return {
       ...baseResult,
       isValid: true,
       category: isElectric ? 'electric' : 'standard',
-      categoryName: isElectric ? 'Austrian Electric Plate (Grüne Schrift)' : 'Austrian Standard Plate',
-      categoryNameDe: isElectric ? 'E-Kennzeichen (Grüne Schrift)' : 'Österreichisches Standard-Kennzeichen',
+      categoryName: isElectric
+        ? 'Austrian Electric Plate (Grüne Schrift)'
+        : isStateGov
+        ? `Austrian State Authority Plate (${dist.state})`
+        : 'Austrian Standard Plate',
+      categoryNameDe: isElectric
+        ? 'E-Kennzeichen (Grüne Schrift)'
+        : isStateGov
+        ? `Landesbehörde / Landesregierung (${dist.state})`
+        : 'Österreichisches Standard-Kennzeichen',
       categoryDescription: isElectric
         ? 'Austrian electric vehicle plate featuring distinctive green lettering and state coat of arms. Exempt from IG-L speed limits on designated motorways.'
-        : `Standard Austrian registration plate for ${dist.fullName}. Displays the official coat of arms of ${dist.state}.`,
+        : `Official Austrian registration plate for ${dist.fullName}. Displays the official state coat of arms of ${dist.state}.`,
       normalizedPlate: `${distCode} ${num}${letters ? ` ${letters}` : ''}`,
       districtCode: distCode,
       districtName: dist.name,
       state: dist.state,
       stateCode: dist.stateCode,
       badgeStateCode: dist.stateCode,
-      middleLetters: letters,
+      middleLetters: letters || undefined,
       numberPart: num,
       textColor,
       specialPerks: isElectric ? ['Exempt from IG-L 100 km/h speed limits on motorways', 'Free municipal parking in cities like Klagenfurt and Linz'] : [],
+      alternateSuggestion: distCode === 'O' ? {
+        country: 'DE',
+        label: 'Looking for German AMLA diplomatic plate 0 320-320?',
+        query: `0 ${num.replace(/\s+/g, '-')}`,
+      } : undefined,
     };
   }
 
-  errors.push(`Could not parse Austrian plate "${cleaned}". Example format: "W 12345 A", "S 911 GT", "BP 12345".`);
+  errors.push(`Could not parse Austrian plate "${cleaned}". Example format: "W 12345 A", "O 320 320", "S 911 GT", "BP 12345".`);
   return baseResult;
 }
 
 export function getRandomAustrianPlate(): { plate: string; category: PlateCategory } {
   const samples: { plate: string; category: PlateCategory }[] = [
     { plate: 'W 12345 A', category: 'standard' },
+    { plate: 'O 320 320', category: 'standard' },
     { plate: 'S 911 GT', category: 'standard' },
     { plate: 'L 4040 E', category: 'electric' },
     { plate: 'MD 888 EF', category: 'standard' },

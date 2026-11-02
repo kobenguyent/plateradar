@@ -1,13 +1,16 @@
 import { District } from '../types';
 
 export const AUSTRIAN_DISTRICTS: District[] = [
-  { code: 'W', name: 'Wien', state: 'Wien', stateCode: 'W', fullName: 'Bundeshauptstadt Wien' },
+  // 9 Federal State Government Plates
+  { code: 'O', name: 'Oberösterreich', state: 'Oberösterreich', stateCode: 'O', fullName: 'Landesregierung und Landtag von Oberösterreich' },
+  { code: 'W', name: 'Wien', state: 'Wien', stateCode: 'W', fullName: 'Bundeshauptstadt Wien und Wiener Landesregierung' },
+  { code: 'N', name: 'Niederösterreich', state: 'Niederösterreich', stateCode: 'N', fullName: 'Landesregierung und Landtag von Niederösterreich' },
   { code: 'G', name: 'Graz', state: 'Steiermark', stateCode: 'ST', fullName: 'Landeshauptstadt Graz' },
   { code: 'L', name: 'Linz', state: 'Oberösterreich', stateCode: 'O', fullName: 'Landeshauptstadt Linz' },
-  { code: 'S', name: 'Salzburg', state: 'Salzburg', stateCode: 'S', fullName: 'Landeshauptstadt Salzburg und Bezirk Salzburg-Umgebung' },
+  { code: 'S', name: 'Salzburg', state: 'Salzburg', stateCode: 'S', fullName: 'Landeshauptstadt Salzburg und Salzburger Landesregierung' },
   { code: 'I', name: 'Innsbruck', state: 'Tirol', stateCode: 'T', fullName: 'Landeshauptstadt Innsbruck' },
-  { code: 'K', name: 'Klagenfurt', state: 'Kärnten', stateCode: 'K', fullName: 'Landeshauptstadt Klagenfurt am Wörthersee' },
-  { code: 'B', name: 'Bregenz', state: 'Vorarlberg', stateCode: 'V', fullName: 'Landeshauptstadt Bregenz und Bezirk Bregenz' },
+  { code: 'K', name: 'Klagenfurt / Kärnten', state: 'Kärnten', stateCode: 'K', fullName: 'Landeshauptstadt Klagenfurt und Kärntner Landesregierung' },
+  { code: 'B', name: 'Bregenz / Burgenland', state: 'Vorarlberg', stateCode: 'V', fullName: 'Landeshauptstadt Bregenz und Burgenländische Landesregierung' },
   { code: 'E', name: 'Eisenstadt', state: 'Burgenland', stateCode: 'B', fullName: 'Landeshauptstadt Eisenstadt' },
   { code: 'P', name: 'St. Pölten', state: 'Niederösterreich', stateCode: 'N', fullName: 'Landeshauptstadt St. Pölten' },
   { code: 'MD', name: 'Mödling', state: 'Niederösterreich', stateCode: 'N', fullName: 'Bezirk Mödling' },
