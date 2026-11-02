@@ -1,0 +1,68 @@
+import React, { useState } from 'react';
+import { CountryCode } from './types';
+import { Header } from './components/layout/Header';
+import { Footer } from './components/layout/Footer';
+import { PlateChecker } from './components/checker/PlateChecker';
+import { DistrictDirectory } from './components/districts/DistrictDirectory';
+import { PlateStudio } from './components/studio/PlateStudio';
+import { PlateQuiz } from './components/quiz/PlateQuiz';
+import { KnowledgeHub } from './components/knowledge/KnowledgeHub';
+
+export const App: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'checker' | 'directory' | 'studio' | 'quiz' | 'knowledge'>('checker');
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>('DE');
+  const [prefilledPlate, setPrefilledPlate] = useState<string>('B MW 1234 E');
+
+  const handleInspectFromDirectory = (plateText: string) => {
+    setPrefilledPlate(plateText);
+    setActiveTab('checker');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex flex-col font-sans">
+      <Header
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        selectedCountry={selectedCountry}
+        setSelectedCountry={setSelectedCountry}
+      />
+
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {activeTab === 'checker' && (
+          <PlateChecker
+            key={`${selectedCountry}-${prefilledPlate}`}
+            country={selectedCountry}
+            onSelectDistrict={(code) => handleInspectFromDirectory(`${code} AB 123`)}
+          />
+        )}
+
+        {activeTab === 'directory' && (
+          <DistrictDirectory
+            country={selectedCountry}
+            onInspectPlate={handleInspectFromDirectory}
+          />
+        )}
+
+        {activeTab === 'studio' && (
+          <PlateStudio
+            key={selectedCountry}
+            country={selectedCountry}
+          />
+        )}
+
+        {activeTab === 'quiz' && (
+          <PlateQuiz />
+        )}
+
+        {activeTab === 'knowledge' && (
+          <KnowledgeHub />
+        )}
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default App;

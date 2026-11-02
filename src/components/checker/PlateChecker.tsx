@@ -1,0 +1,271 @@
+import React, { useState } from 'react';
+import { CountryCode, PlateParseResult } from '../../types';
+import { CountryAdapters } from '../../core/country-registry';
+import { PlateRenderer } from '../plate/PlateRenderer';
+import { 
+  CheckCircle2, 
+  AlertTriangle, 
+  XCircle, 
+  ShieldCheck, 
+  Zap, 
+  Clock, 
+  Sparkles, 
+  Info, 
+  Building2, 
+  Calendar,
+  Share2,
+  Copy,
+  Check
+} from 'lucide-react';
+
+interface PlateCheckerProps {
+  country: CountryCode;
+  onSelectDistrict?: (code: string) => void;
+}
+
+export const PlateChecker: React.FC<PlateCheckerProps> = ({ country }) => {
+  const adapter = CountryAdapters[country];
+  const [inputVal, setInputVal] = useState<string>('B MW 1234 E');
+  const [copied, setCopied] = useState<boolean>(false);
+
+  // Parse plate dynamically
+  const parseResult: PlateParseResult = adapter.parse(inputVal);
+
+  const quickSamples = [
+    { label: 'Electric (E)', plate: 'B MW 1234 E' },
+    { label: 'Historic Oldtimer (H)', plate: 'M CL 1972 H' },
+    { label: 'Seasonal (Cabrio)', plate: 'HH SP 911 04/10' },
+    { label: '5-Day Transfer (Yellow)', plate: 'B 04123 28/11/26' },
+    { label: 'Export (Red)', plate: 'M 4567 A 15/06/27' },
+    { label: 'Diplomat (Ambassador)', plate: '0 17-1' },
+    { label: 'Embassy Staff', plate: 'B 35-123' },
+    { label: 'Armed Forces (Y)', plate: 'Y-482195' },
+    { label: 'Federal Police (BP)', plate: 'BP 18-450' },
+    { label: 'THW Relief', plate: 'THW-86412' },
+    { label: 'Red Dealer (06)', plate: 'B 06123' },
+    { label: 'Green Tax-Exempt', plate: 'FFB AG 123' },
+    { label: 'Chancellor / Head of State', plate: '0-1' },
+    { label: 'Pre-1995 DIN Font', plate: 'DAH GT 500' },
+  ];
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(parseResult.normalizedPlate);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRandomize = () => {
+    const random = adapter.getRandomPlate();
+    setInputVal(random.plate);
+  };
+
+  return (
+    <div className="space-y-8 max-w-5xl mx-auto">
+      {/* Top Search Bar & Interactive Plate Box */}
+      <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 md:p-8 backdrop-blur shadow-2xl">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              <ShieldCheck className="w-6 h-6 text-blue-400" />
+              Plate Inspector & Live Decoder
+            </h2>
+            <p className="text-sm text-slate-400 mt-1">
+              Type any vehicle license plate or choose a preset to inspect its district, category, legal status, and privileges.
+            </p>
+          </div>
+          <button
+            onClick={handleRandomize}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded-xl text-sm font-semibold transition"
+          >
+            <Sparkles className="w-4 h-4" />
+            Random Plate
+          </button>
+        </div>
+
+        {/* Big Input Field */}
+        <div className="relative mb-8">
+          <input
+            type="text"
+            value={inputVal}
+            onChange={(e) => setInputVal(e.target.value)}
+            placeholder="e.g. B MW 1234 E, 0 17-1, Y-123456..."
+            className="w-full bg-slate-900/90 border-2 border-slate-700 focus:border-blue-500 text-white font-mono text-2xl md:text-3xl px-5 py-4 rounded-xl shadow-inner focus:outline-none transition uppercase tracking-wider"
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <button
+              onClick={handleCopy}
+              className="p-2 text-slate-400 hover:text-white bg-slate-800 rounded-lg transition"
+              title="Copy plate string"
+            >
+              {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Realistic Interactive License Plate Display */}
+        <div className="py-6 flex flex-col items-center justify-center bg-slate-950/60 rounded-xl border border-slate-800/80 p-4">
+          <span className="text-xs uppercase font-semibold text-slate-400 tracking-wider mb-4">
+            Official Plate Preview (Authentic FE-Schrift & Seals)
+          </span>
+          <PlateRenderer plate={parseResult} size="lg" showScrews={true} />
+        </div>
+
+        {/* Quick Sample Presets */}
+        <div className="mt-6">
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 block">
+            Explore All German License Plate Types:
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {quickSamples.map((sample) => (
+              <button
+                key={sample.label}
+                onClick={() => setInputVal(sample.plate)}
+                className={`text-xs px-3 py-1.5 rounded-lg border transition font-medium ${
+                  inputVal === sample.plate
+                    ? 'bg-blue-600 text-white border-blue-500 shadow-md'
+                    : 'bg-slate-900/60 text-slate-300 border-slate-700/60 hover:border-slate-500 hover:text-white'
+                }`}
+              >
+                {sample.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Warnings & Errors */}
+      {parseResult.prohibitedWarning && (
+        <div className="bg-red-950/40 border border-red-500/50 rounded-2xl p-5 flex items-start gap-4">
+          <AlertTriangle className="w-6 h-6 text-red-400 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-red-300 font-semibold text-base">Prohibited / Restricted Combination Detected</h3>
+            <p className="text-sm text-red-200/90 mt-1">{parseResult.prohibitedWarning}</p>
+          </div>
+        </div>
+      )}
+
+      {parseResult.errors.length > 0 && !parseResult.prohibitedWarning && (
+        <div className="bg-amber-950/40 border border-amber-500/50 rounded-2xl p-5 flex items-start gap-4">
+          <Info className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-amber-300 font-semibold text-base">Validation Information</h3>
+            <ul className="text-sm text-amber-200/90 mt-1 list-disc list-inside space-y-1">
+              {parseResult.errors.map((err, i) => (
+                <li key={i}>{err}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Deep Inspection Details Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Card 1: Category & Legal Type */}
+        <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+              {parseResult.category === 'electric' ? <Zap className="w-5 h-5 text-emerald-400" /> : <ShieldCheck className="w-5 h-5" />}
+            </div>
+            <div>
+              <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Classification</span>
+              <h3 className="text-lg font-bold text-white leading-tight">{parseResult.categoryName}</h3>
+            </div>
+          </div>
+          <div className="text-xs text-blue-300 font-medium mb-3">{parseResult.categoryNameDe}</div>
+          <p className="text-sm text-slate-300 mb-4 leading-relaxed">{parseResult.categoryDescription}</p>
+          <div className="pt-3 border-t border-slate-700/60 text-xs text-slate-400 flex items-center justify-between">
+            <span>Legal Foundation:</span>
+            <span className="font-mono text-slate-300">{parseResult.legalBasis}</span>
+          </div>
+        </div>
+
+        {/* Card 2: District & Geographic Jurisdiction */}
+        <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Jurisdiction</span>
+              <h3 className="text-lg font-bold text-white leading-tight">
+                {parseResult.districtName || 'National / Official'}
+              </h3>
+            </div>
+          </div>
+
+          <div className="space-y-2.5 text-sm text-slate-300">
+            <div className="flex justify-between items-center py-1 border-b border-slate-700/50">
+              <span className="text-slate-400">District Code:</span>
+              <span className="font-mono font-bold text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
+                {parseResult.districtCode || '—'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-1 border-b border-slate-700/50">
+              <span className="text-slate-400">Federal State:</span>
+              <span className="font-semibold text-white">{parseResult.state || 'Federal (Bund)'}</span>
+            </div>
+            {parseResult.diplomaticInfo && (
+              <div className="py-2 bg-blue-950/50 border border-blue-800/60 rounded-lg p-2.5 mt-2">
+                <span className="text-xs uppercase font-bold text-blue-300 block mb-1">Diplomatic Accreditation</span>
+                <div className="flex items-center gap-2 text-white font-medium">
+                  <span className="text-xl">{parseResult.diplomaticInfo.flag}</span>
+                  <span>{parseResult.diplomaticInfo.country}</span>
+                </div>
+                <span className="text-xs text-slate-400 block mt-0.5">{parseResult.diplomaticInfo.role}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center py-1">
+              <span className="text-slate-400">Environmental Zone (Plakette):</span>
+              <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold text-xs bg-emerald-950/60 border border-emerald-700/50 px-2 py-0.5 rounded-full">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Green Euro 4/6
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Special Privileges & Validity */}
+        <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">Perks & Validity</span>
+              <h3 className="text-lg font-bold text-white leading-tight">Privileges & Status</h3>
+            </div>
+          </div>
+
+          {parseResult.specialPerks.length > 0 ? (
+            <ul className="space-y-2 text-sm text-slate-300">
+              {parseResult.specialPerks.map((perk, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="text-xs md:text-sm">{perk}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Standard German road vehicle registration. Requires annual or biennial Hauptuntersuchung (HU/TÜV) inspection and valid third-party liability insurance (Kfz-Haftpflicht).
+            </p>
+          )}
+
+          {/* Expiry breakdown if applicable */}
+          {(parseResult.expiryDay || parseResult.seasonStart) && (
+            <div className="mt-4 pt-3 border-t border-slate-700/60 bg-slate-900/40 p-3 rounded-xl border border-slate-700/40">
+              <div className="flex items-center gap-2 text-amber-300 font-semibold text-xs mb-1">
+                <Calendar className="w-3.5 h-3.5" />
+                {parseResult.hasSeasonBand ? 'Operating Window' : 'Validity Expiration'}
+              </div>
+              <p className="text-xs text-slate-300">
+                {parseResult.hasSeasonBand
+                  ? `Active from Month ${parseResult.seasonStart} to Month ${parseResult.seasonEnd} each year.`
+                  : `Expires on ${String(parseResult.expiryDay).padStart(2, '0')}.${String(parseResult.expiryMonth).padStart(2, '0')}.${parseResult.expiryYear}.`}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
