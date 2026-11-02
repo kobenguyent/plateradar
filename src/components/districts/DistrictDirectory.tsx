@@ -155,7 +155,19 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
             ? `./badges/at/${district.stateCode}.svg`
             : `./badges/de/${district.stateCode}.svg`;
 
-          const inspectCode = district.samplePlate || `${district.code} AB 123`;
+          const inspectCode = district.samplePlate || (
+            country === 'JP'
+              ? `${district.code} 300 さ 12-34`
+              : country === 'TH'
+              ? `1กข 1234 ${district.name.split(' ')[0]}`
+              : country === 'VN'
+              ? `${district.code}A-123.45`
+              : country === 'AU'
+              ? `${district.code} AA-12-BB`
+              : country === 'NZ'
+              ? `ABC 123`
+              : `${district.code} AB 123`
+          );
 
           return (
             <div
@@ -173,16 +185,20 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
                     {district.code}
                   </span>
 
-                  {/* Federal State Badge */}
-                  <div className="w-7 h-7 rounded-full bg-white/80 p-0.5 shadow-sm border border-slate-400 flex items-center justify-center overflow-hidden">
-                    <img
-                      src={badgePath}
-                      alt={district.state}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = './badges/de/bundesadler.svg';
-                      }}
-                    />
+                  {/* Federal State Badge or Country Flag */}
+                  <div className="w-7 h-7 rounded-full bg-white/80 p-0.5 shadow-sm border border-slate-400 flex items-center justify-center overflow-hidden shrink-0">
+                    {country === 'DE' || country === 'AT' || country === 'CH' ? (
+                      <img
+                        src={badgePath}
+                        alt={district.state}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = './badges/de/bundesadler.svg';
+                        }}
+                      />
+                    ) : (
+                      <span className="text-base select-none leading-none">{adapter.info.flag}</span>
+                    )}
                   </div>
                 </div>
 

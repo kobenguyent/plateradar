@@ -35,11 +35,11 @@ export const Header: React.FC<HeaderProps> = ({
                   Plate<span className="text-blue-400">Radar</span>
                 </span>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                  EU
+                  GLOBAL
                 </span>
               </div>
               <p className="hidden md:block text-[11px] text-slate-400 -mt-0.5 font-medium">
-                German & European License Plate Intelligence
+                Global License Plate Intelligence &amp; Live Radar
               </p>
             </div>
           </div>

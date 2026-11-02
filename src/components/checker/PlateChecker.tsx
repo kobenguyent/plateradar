@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CountryCode, PlateParseResult } from '../../types';
-import { CountryAdapters } from '../../core/country-registry';
+import { CountryAdapters, autoDetectCountry, SUPPORTED_COUNTRIES } from '../../core/country-registry';
 import { PlateRenderer } from '../plate/PlateRenderer';
 import { 
   CheckCircle2, 
@@ -25,19 +25,8 @@ interface PlateCheckerProps {
   onSwitchCountry?: (country: CountryCode, query: string) => void;
 }
 
-export const PlateChecker: React.FC<PlateCheckerProps> = ({ 
-  country, 
-  initialValue = 'B MW 1234 E',
-  onSwitchCountry 
-}) => {
-  const adapter = CountryAdapters[country];
-  const [inputVal, setInputVal] = useState<string>(initialValue);
-  const [copied, setCopied] = useState<boolean>(false);
-
-  // Parse plate dynamically
-  const parseResult: PlateParseResult = adapter.parse(inputVal);
-
-  const quickSamples = [
+const SAMPLES_BY_COUNTRY: Record<CountryCode, { label: string; plate: string }[]> = {
+  DE: [
     { label: 'Electric (E)', plate: 'B MW 1234 E' },
     { label: 'Historic Oldtimer (H)', plate: 'M CL 1972 H' },
     { label: 'AMLA EU Agency (320)', plate: '0 320 320' },
@@ -53,7 +42,97 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
     { label: 'Green Tax-Exempt', plate: 'FFB AG 123' },
     { label: 'Chancellor / Head of State', plate: '0-1' },
     { label: 'Pre-1995 DIN Font', plate: 'DAH GT 500' },
-  ];
+  ],
+  AT: [
+    { label: 'Vienna Standard (W)', plate: 'W 12345 A' },
+    { label: 'Oberösterreich State (O)', plate: 'O 320 320' },
+    { label: 'Electric Green (IG-L)', plate: 'L 4040 E' },
+    { label: 'Federal Police (BP)', plate: 'BP 12345' },
+    { label: 'Federal Armed Forces (BH)', plate: 'BH 67890' },
+    { label: 'Salzburg (S)', plate: 'S 8888 AA' },
+    { label: 'Tyrol Innsbruck (IL)', plate: 'IL 999 ZZ' },
+  ],
+  CH: [
+    { label: 'Zürich Canton (ZH)', plate: 'ZH 854123' },
+    { label: 'Bern Canton (BE)', plate: 'BE 12345' },
+    { label: 'Geneva Canton (GE)', plate: 'GE 555666' },
+    { label: 'Swiss Military (M)', plate: 'M 12345' },
+    { label: 'Vaud Canton (VD)', plate: 'VD 98765' },
+    { label: 'Ticino Canton (TI)', plate: 'TI 45678' },
+  ],
+  JP: [
+    { label: 'Standard White (品川)', plate: '品川 300 さ 12-34' },
+    { label: 'Kei Car Mini (横浜 580)', plate: '横浜 580 わ 56-78' },
+    { label: 'Osaka Large (大阪 330)', plate: '大阪 330 な 88-88' },
+    { label: 'Mt. Fuji Heritage (富士山)', plate: '富士山 500 す 37-76' },
+    { label: 'SOFA US Military (沖縄 Y)', plate: '沖縄 500 Y 45-67' },
+    { label: 'Diplomatic Blue (外)', plate: '外 1234' },
+  ],
+  TH: [
+    { label: 'Bangkok Sedan (1กข)', plate: '1กข 1234 Bangkok' },
+    { label: 'Lucky Double Letter (8กก)', plate: '8กก 8888 Bangkok' },
+    { label: 'Chiang Mai (2ขค)', plate: '2ขค 5678 Chiang Mai' },
+    { label: 'Phuket Island (3ขง)', plate: '3ขง 4040 Phuket' },
+    { label: 'Temporary Red (ป้ายแดง)', plate: 'ก-9999 แดง' },
+    { label: 'Chonburi Pattaya (4กจ)', plate: '4กจ 7777 Chonburi' },
+  ],
+  VN: [
+    { label: 'Hà Nội Capital (30A)', plate: '30A-123.45' },
+    { label: 'TP. Hồ Chí Minh (51H)', plate: '51H-888.88' },
+    { label: 'Central Gov Blue (80A)', plate: '80A-001.01' },
+    { label: 'Đà Nẵng Coastal (43A)', plate: '43A-567.89' },
+    { label: 'People’s Army Red (QA)', plate: 'QA-12-34' },
+    { label: 'Hải Phòng Port (15A)', plate: '15A-999.99' },
+  ],
+  AU: [
+    { label: 'NSW (First State)', plate: 'NSW AA-12-BB' },
+    { label: 'VIC (Education State)', plate: 'VIC 1AA-2BB' },
+    { label: 'QLD (Sunshine State)', plate: 'QLD 123-AA1' },
+    { label: 'WA (Wildflower State)', plate: 'WA 1AAA-123' },
+    { label: 'SA (Festival State)', plate: 'SA S123-AAA' },
+    { label: 'ACT (Nation’s Capital)', plate: 'ACT YAA-12A' },
+    { label: 'TAS (Explore Possibilities)', plate: 'TAS A-12-BB' },
+  ],
+  NZ: [
+    { label: 'Current Standard (ABC 123)', plate: 'ABC 123' },
+    { label: 'Modern Series (KOB 789)', plate: 'KOB 789' },
+    { label: 'Legacy Pre-2001 (AA 1234)', plate: 'AA 1234' },
+    { label: 'Personalised KiwiPlate', plate: 'KIWI' },
+    { label: 'Electric Vehicle Custom', plate: 'EV 2026' },
+    { label: 'Turbo Custom', plate: 'TURBO' },
+  ],
+};
+
+const PLACEHOLDER_BY_COUNTRY: Record<CountryCode, string> = {
+  DE: 'e.g. B MW 1234 E, 0 320 320, 0 17-1, Y-123456...',
+  AT: 'e.g. W 12345 A, O 320 320, L 4040 E, BP 12345...',
+  CH: 'e.g. ZH 854123, BE 12345, M 12345...',
+  JP: 'e.g. 品川 300 さ 12-34, 横浜 580 わ 5678, 外 1234...',
+  TH: 'e.g. 1กข 1234 Bangkok, 8กก 8888, ป้ายแดง 9999...',
+  VN: 'e.g. 30A-123.45, 51H-888.88, 80A-001.01, QA-12-34...',
+  AU: 'e.g. NSW AA-12-BB, VIC 1AA-2BB, QLD 123-AA1...',
+  NZ: 'e.g. ABC 123, AA 1234, KIWI, KOB 789...',
+};
+
+export const PlateChecker: React.FC<PlateCheckerProps> = ({ 
+  country, 
+  initialValue,
+  onSwitchCountry 
+}) => {
+  const adapter = CountryAdapters[country];
+  const quickSamples = SAMPLES_BY_COUNTRY[country] || SAMPLES_BY_COUNTRY.DE;
+  const defaultInitial = quickSamples[0]?.plate || 'B MW 1234 E';
+
+  const [inputVal, setInputVal] = useState<string>(initialValue || defaultInitial);
+  const [copied, setCopied] = useState<boolean>(false);
+
+  // Parse plate dynamically
+  const parseResult: PlateParseResult = adapter.parse(inputVal);
+
+  // Detect if user typed a plate matching another country
+  const detectedOtherCountry = autoDetectCountry(inputVal);
+  const showCrossCountryHint = !parseResult.isValid && detectedOtherCountry !== country;
+  const otherCountryInfo = SUPPORTED_COUNTRIES.find((c) => c.id === detectedOtherCountry);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(parseResult.normalizedPlate);
@@ -74,10 +153,10 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               <ShieldCheck className="w-6 h-6 text-blue-400" />
-              Plate Inspector & Live Decoder ({adapter.info.name})
+              Plate Inspector & Live Decoder ({adapter.info.flag} {adapter.info.name})
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Type any vehicle license plate (e.g. standard, diplomatic, or international organizations like <strong className="text-slate-300">0 320 320</strong>) to inspect its district, category, legal status, and privileges.
+              Type any vehicle license plate to inspect its jurisdiction, category, color coding, legal status, and privileges.
             </p>
           </div>
           <button
@@ -95,7 +174,7 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
             type="text"
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
-            placeholder="e.g. B MW 1234 E, 0 320 320, 0 17-1, Y-123456..."
+            placeholder={PLACEHOLDER_BY_COUNTRY[country]}
             className="w-full bg-slate-900/90 border-2 border-slate-700 focus:border-blue-500 text-white font-mono text-2xl md:text-3xl px-5 py-4 rounded-xl shadow-inner focus:outline-none transition uppercase tracking-wider"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -133,10 +212,28 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
           </div>
         )}
 
+        {/* Auto-detected alternate country when parse fails */}
+        {showCrossCountryHint && otherCountryInfo && onSwitchCountry && !parseResult.alternateSuggestion && (
+          <div className="mb-6 p-3.5 bg-blue-950/50 border border-blue-600/50 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs md:text-sm text-blue-200">
+            <div className="flex items-center gap-2">
+              <Globe2 className="w-4 h-4 text-blue-400 shrink-0" />
+              <span>
+                Entered plate looks like a format from {otherCountryInfo.flag} {otherCountryInfo.name}. Would you like to switch?
+              </span>
+            </div>
+            <button
+              onClick={() => onSwitchCountry(otherCountryInfo.id, inputVal)}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0"
+            >
+              Switch to {otherCountryInfo.name} <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Realistic Interactive License Plate Display */}
         <div className="py-6 flex flex-col items-center justify-center bg-slate-950/60 rounded-xl border border-slate-800/80 p-4">
           <span className="text-xs uppercase font-semibold text-slate-400 tracking-wider mb-4">
-            Official Plate Preview (Authentic FE-Schrift & Seals)
+            Official Plate Preview ({adapter.info.name} Authentic Geometry & Seals)
           </span>
           <PlateRenderer plate={parseResult} size="lg" showScrews={true} />
         </div>
@@ -144,7 +241,7 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
         {/* Quick Sample Presets */}
         <div className="mt-6">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 block">
-            Explore Preset License Plate Types:
+            Explore {adapter.info.name} License Plate Types:
           </span>
           <div className="flex flex-wrap gap-2">
             {quickSamples.map((sample) => (
@@ -206,7 +303,7 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
           <p className="text-sm text-slate-300 mb-4 leading-relaxed">{parseResult.categoryDescription}</p>
           <div className="pt-3 border-t border-slate-700/60 text-xs text-slate-400 flex items-center justify-between">
             <span>Legal Foundation:</span>
-            <span className="font-mono text-slate-300">{parseResult.legalBasis}</span>
+            <span className="font-mono text-slate-300 truncate max-w-[180px]">{parseResult.legalBasis}</span>
           </div>
         </div>
 
@@ -226,14 +323,14 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
 
           <div className="space-y-2.5 text-sm text-slate-300">
             <div className="flex justify-between items-center py-1 border-b border-slate-700/50">
-              <span className="text-slate-400">District Code:</span>
+              <span className="text-slate-400">District / Region:</span>
               <span className="font-mono font-bold text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
                 {parseResult.districtCode || '—'}
               </span>
             </div>
             <div className="flex justify-between items-center py-1 border-b border-slate-700/50">
-              <span className="text-slate-400">Federal State / Authority:</span>
-              <span className="font-semibold text-white">{parseResult.state || 'Federal (Bund)'}</span>
+              <span className="text-slate-400">State / Prefecture / Authority:</span>
+              <span className="font-semibold text-white">{parseResult.state || adapter.info.name}</span>
             </div>
             {parseResult.diplomaticInfo && (
               <div className="py-2.5 bg-blue-950/50 border border-blue-800/60 rounded-xl p-3 mt-2">
@@ -251,9 +348,9 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
               </div>
             )}
             <div className="flex justify-between items-center py-1">
-              <span className="text-slate-400">Environmental Zone (Plakette):</span>
+              <span className="text-slate-400">Environmental Zone / Status:</span>
               <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold text-xs bg-emerald-950/60 border border-emerald-700/50 px-2 py-0.5 rounded-full">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Green Euro 4/6
+                <CheckCircle2 className="w-3.5 h-3.5" /> Road Legal
               </span>
             </div>
           </div>
@@ -282,7 +379,7 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
             </ul>
           ) : (
             <p className="text-sm text-slate-400 leading-relaxed">
-              Standard vehicle registration. Requires regular Hauptuntersuchung (HU/TÜV) inspection and valid motor vehicle liability insurance.
+              Standard vehicle registration in {adapter.info.name}. Requires periodic safety inspection, valid registration fees, and compulsory motor vehicle liability insurance.
             </p>
           )}
 

@@ -147,6 +147,40 @@ export const KnowledgeHub: React.FC = () => {
             </p>
           </div>
         </div>
+
+        {/* Section 5: International Registration Systems */}
+        <div className="md:col-span-2 bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-md space-y-4">
+          <div className="flex items-center gap-3 text-cyan-400">
+            <BookOpen className="w-6 h-6" />
+            <h3 className="font-bold text-lg text-white">International License Plate Systems Overview</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs text-slate-300">
+            <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
+              <strong className="text-white block font-semibold mb-1">🇯🇵 Japan (日本)</strong>
+              Two-line configuration: top row shows the transport branch office in Kanji (品川, 横浜...) and class code (3xx/5xx). Bottom row has Hiragana and numbers. Kei mini-cars (≤660cc) carry yellow plates with black text. Rear plates are sealed with an official tamper-evident aluminum bolt (封印 Fuin).
+            </div>
+            <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
+              <strong className="text-white block font-semibold mb-1">🇹🇭 Thailand (ประเทศไทย)</strong>
+              Managed by Department of Land Transport (DLT). Font color signifies vehicle type: black for standard passenger cars, green for private pickups, blue for passenger vans (&gt;7 seats), and yellow for public transit/taxis. Red plates with black text (ป้ายแดง) are temporary registration tags.
+            </div>
+            <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
+              <strong className="text-white block font-semibold mb-1">🇻🇳 Vietnam (Việt Nam)</strong>
+              Regulated under MPS Circular 24/2023. White plates with black characters denote civilian cars. Blue plates with white characters (e.g. 80A) identify central government and state administration. Yellow plates represent commercial transport businesses, and crimson red plates (QA) belong to the People’s Army.
+            </div>
+            <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
+              <strong className="text-white block font-semibold mb-1">🇦🇺 Australia</strong>
+              Decentralized state jurisdiction: NSW features yellow plates with "NEW SOUTH WALES", Victoria uses blue lettering with "THE EDUCATION STATE", and Queensland features maroon text with "SUNSHINE STATE". Integrated with Compulsory Third Party (CTP) insurance.
+            </div>
+            <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
+              <strong className="text-white block font-semibold mb-1">🇳🇿 New Zealand (Aotearoa)</strong>
+              Standard 3-letter + 3-digit series (ABC 123) issued by Waka Kotahi NZTA. Legacy pre-2001 plates feature 2 letters + 4 digits (AA 1234). Custom KiwiPlates grant full legal asset ownership that can be bought, sold, or transferred across vehicles.
+            </div>
+            <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
+              <strong className="text-white block font-semibold mb-1">🇦🇹 Austria &amp; 🇨🇭 Switzerland</strong>
+              Austria uses white reflective plates with federal state coats of arms in the middle and green lettering for EVs. Switzerland features compact aluminum plates with the Swiss national shield on the left and the cantonal crest on the right, linked to the registered owner (Wechselschild).
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

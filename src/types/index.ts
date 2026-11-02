@@ -1,4 +1,4 @@
-export type CountryCode = 'DE' | 'AT' | 'CH';
+export type CountryCode = 'DE' | 'AT' | 'CH' | 'JP' | 'TH' | 'VN' | 'AU' | 'NZ';
 
 export interface CountryInfo {
   id: CountryCode;
@@ -30,6 +30,9 @@ export type PlateCategory =
   | 'state_police'
   | 'insurance_moped'
   | 'historical_din'
+  | 'kei_car'
+  | 'commercial'
+  | 'government'
   | 'unknown';
 
 export interface District {
@@ -66,19 +69,22 @@ export interface PlateParseResult {
   stateCode?: string;
   middleLetters?: string;
   numberPart?: string;
-  suffix?: string; // 'E', 'H'
+  suffix?: string; // 'E', 'H', etc.
   seasonStart?: number;
   seasonEnd?: number;
   expiryDay?: number;
   expiryMonth?: number;
   expiryYear?: number;
   diplomaticInfo?: DiplomaticMission;
-  textColor: 'black' | 'red' | 'green' | 'blue';
+  textColor: 'black' | 'red' | 'green' | 'blue' | 'yellow' | 'white';
+  backgroundColor?: 'white' | 'yellow' | 'green' | 'blue' | 'red' | 'black';
   hasEuroBand: boolean;
   hasGermanFlag: boolean;
   hasYellowBand: boolean;
   hasRedBand: boolean;
   hasSeasonBand: boolean;
+  topLineText?: string; // Used for Japanese plates: e.g. "品川 300"
+  bottomLineText?: string; // Used for Thai province or Australian state slogan: e.g. "NEW SOUTH WALES"
   tuevYear?: number;
   tuevMonth?: number;
   badgeStateCode?: string;

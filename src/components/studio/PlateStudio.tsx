@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CountryCode, PlateCategory, PlateParseResult } from '../../types';
 import { CountryAdapters } from '../../core/country-registry';
 import { PlateRenderer } from '../plate/PlateRenderer';
-import { Palette, Download, Sparkles, Sliders, Check, Shield } from 'lucide-react';
+import { Palette, Download, Sliders, Check, Shield } from 'lucide-react';
 
 interface PlateStudioProps {
   country: CountryCode;
@@ -12,10 +12,82 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
   const adapter = CountryAdapters[country];
   const districts = adapter.getDistricts();
 
-  const [category, setCategory] = useState<PlateCategory>('standard');
-  const [districtCode, setDistrictCode] = useState<string>('B');
-  const [middleLetters, setMiddleLetters] = useState<string>('MW');
-  const [numberPart, setNumberPart] = useState<string>('1234');
+  // Country-specific initial state
+  const getInitialState = () => {
+    switch (country) {
+      case 'JP':
+        return {
+          category: 'standard' as PlateCategory,
+          districtCode: '品川',
+          classCode: '300',
+          middleLetters: 'さ',
+          numberPart: '12-34',
+        };
+      case 'TH':
+        return {
+          category: 'standard' as PlateCategory,
+          districtCode: 'BKK',
+          classCode: '',
+          middleLetters: '1กข',
+          numberPart: '1234',
+        };
+      case 'VN':
+        return {
+          category: 'standard' as PlateCategory,
+          districtCode: '30',
+          classCode: '',
+          middleLetters: 'A',
+          numberPart: '123.45',
+        };
+      case 'AU':
+        return {
+          category: 'standard' as PlateCategory,
+          districtCode: 'NSW',
+          classCode: '',
+          middleLetters: '',
+          numberPart: 'AA-12-BB',
+        };
+      case 'NZ':
+        return {
+          category: 'standard' as PlateCategory,
+          districtCode: 'NZ',
+          classCode: '',
+          middleLetters: 'ABC',
+          numberPart: '123',
+        };
+      case 'AT':
+        return {
+          category: 'standard' as PlateCategory,
+          districtCode: 'W',
+          classCode: '',
+          middleLetters: '',
+          numberPart: '12345 A',
+        };
+      case 'CH':
+        return {
+          category: 'standard' as PlateCategory,
+          districtCode: 'ZH',
+          classCode: '',
+          middleLetters: '',
+          numberPart: '854123',
+        };
+      default:
+        return {
+          category: 'standard' as PlateCategory,
+          districtCode: 'B',
+          classCode: '',
+          middleLetters: 'MW',
+          numberPart: '1234',
+        };
+    }
+  };
+
+  const init = getInitialState();
+  const [category, setCategory] = useState<PlateCategory>(init.category);
+  const [districtCode, setDistrictCode] = useState<string>(init.districtCode);
+  const [classCode, setClassCode] = useState<string>(init.classCode);
+  const [middleLetters, setMiddleLetters] = useState<string>(init.middleLetters);
+  const [numberPart, setNumberPart] = useState<string>(init.numberPart);
   const [suffix, setSuffix] = useState<string>(''); // '', 'E', 'H'
   const [seasonStart, setSeasonStart] = useState<number>(4);
   const [seasonEnd, setSeasonEnd] = useState<number>(10);
@@ -37,100 +109,184 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
   // Sync category change defaults
   const handleCategoryChange = (cat: PlateCategory) => {
     setCategory(cat);
-    if (cat === 'electric') {
-      setSuffix('E');
-    } else if (cat === 'classic') {
-      setSuffix('H');
-    } else if (cat === 'dealer_collector_red') {
-      setNumberPart('06123');
-      setMiddleLetters('');
-      setSuffix('');
-    } else if (cat === 'short_term') {
-      setNumberPart('04123');
-      setMiddleLetters('');
-      setSuffix('');
-    } else if (cat === 'export') {
-      setNumberPart('1234');
-      setMiddleLetters('A');
-      setSuffix('');
-    } else if (cat === 'federal_armed_forces') {
-      setDistrictCode('Y');
-      setMiddleLetters('');
-      setNumberPart('482195');
-      setSuffix('');
-    } else if (cat === 'federal_police') {
-      setDistrictCode('BP');
-      setMiddleLetters('');
-      setNumberPart('18-450');
-      setSuffix('');
-    } else if (cat === 'diplomatic') {
-      setDistrictCode('0');
-      setMiddleLetters('');
-      setNumberPart('17-1');
-      setSuffix('');
-    } else if (cat === 'historical_din') {
-      setFontType('DIN');
-      setSuffix('');
-    } else {
-      setSuffix('');
-      setFontType('FE');
+    if (country === 'JP') {
+      if (cat === 'kei_car') {
+        setClassCode('580');
+        setMiddleLetters('わ');
+      } else if (cat === 'diplomatic') {
+        setMiddleLetters('');
+        setNumberPart('1234');
+      } else if (cat === 'commercial') {
+        setClassCode('200');
+      } else {
+        setClassCode('300');
+        setMiddleLetters('さ');
+      }
+    } else if (country === 'TH') {
+      if (cat === 'short_term') {
+        setMiddleLetters('ก');
+        setNumberPart('9999');
+      }
+    } else if (country === 'VN') {
+      if (cat === 'government') {
+        setDistrictCode('80');
+        setMiddleLetters('A');
+      } else if (cat === 'federal_armed_forces') {
+        setMiddleLetters('QA');
+        setNumberPart('12-34');
+      }
+    } else if (country === 'DE') {
+      if (cat === 'electric') {
+        setSuffix('E');
+      } else if (cat === 'classic') {
+        setSuffix('H');
+      } else if (cat === 'dealer_collector_red') {
+        setNumberPart('06123');
+        setMiddleLetters('');
+        setSuffix('');
+      } else if (cat === 'short_term') {
+        setNumberPart('04123');
+        setMiddleLetters('');
+        setSuffix('');
+      } else if (cat === 'export') {
+        setNumberPart('1234');
+        setMiddleLetters('A');
+        setSuffix('');
+      } else if (cat === 'federal_armed_forces') {
+        setDistrictCode('Y');
+        setMiddleLetters('');
+        setNumberPart('482195');
+        setSuffix('');
+      } else if (cat === 'federal_police') {
+        setDistrictCode('BP');
+        setMiddleLetters('');
+        setNumberPart('18-450');
+        setSuffix('');
+      } else if (cat === 'diplomatic') {
+        setDistrictCode('0');
+        setMiddleLetters('');
+        setNumberPart('17-1');
+        setSuffix('');
+      } else if (cat === 'historical_din') {
+        setFontType('DIN');
+        setSuffix('');
+      } else {
+        setSuffix('');
+        setFontType('FE');
+      }
     }
   };
 
-  // Construct plate model
-  const customPlate: PlateParseResult = {
-    country,
-    rawInput: `${districtCode} ${middleLetters} ${numberPart} ${suffix}`.trim(),
-    normalizedPlate: `${districtCode} ${middleLetters} ${numberPart} ${suffix}`.trim(),
-    isValid: true,
+  // Build input text for parser
+  const buildPlateString = () => {
+    if (country === 'JP') {
+      if (category === 'diplomatic') return `外 ${numberPart}`;
+      return `${districtCode} ${classCode || '300'} ${middleLetters || 'さ'} ${numberPart}`;
+    }
+    if (country === 'TH') {
+      if (category === 'short_term') return `ก-${numberPart} แดง`;
+      const d = adapter.findDistrict(districtCode);
+      const provName = d ? d.name.split(' ')[0] : 'Bangkok';
+      return `${middleLetters} ${numberPart} ${provName}`;
+    }
+    if (country === 'VN') {
+      if (category === 'federal_armed_forces') return `${middleLetters || 'QA'}-${numberPart}`;
+      return `${districtCode}${middleLetters}-${numberPart}`;
+    }
+    if (country === 'AU') {
+      return `${districtCode} ${numberPart}`;
+    }
+    if (country === 'NZ') {
+      return `${middleLetters} ${numberPart}`.trim();
+    }
+    if (country === 'CH') {
+      return `${districtCode} ${numberPart}`.trim();
+    }
+    if (country === 'AT') {
+      return `${districtCode} ${numberPart}`.trim();
+    }
+    // Default Germany
+    return `${districtCode} ${middleLetters} ${numberPart} ${suffix}`.trim();
+  };
+
+  const parsedBase = adapter.parse(buildPlateString(), {
     category,
-    categoryName: 'Custom Built Plate',
-    categoryNameDe: 'Individuelles Kennzeichen',
-    categoryDescription: 'Crafted in PlateRadar Plate Studio.',
-    districtCode,
-    middleLetters: middleLetters || undefined,
-    numberPart: numberPart || undefined,
-    suffix: suffix || undefined,
-    seasonStart: category === 'seasonal' || category === 'classic_seasonal' || category === 'electric_seasonal' ? seasonStart : undefined,
-    seasonEnd: category === 'seasonal' || category === 'classic_seasonal' || category === 'electric_seasonal' ? seasonEnd : undefined,
-    textColor: category === 'dealer_collector_red' ? 'red' : category === 'tax_exempt_green' ? 'green' : 'black',
-    fontType: category === 'historical_din' ? 'DIN' : fontType,
-    hasEuroBand: category !== 'federal_armed_forces' && category !== 'historical_din' && country !== 'CH',
-    hasGermanFlag: category === 'federal_armed_forces',
-    hasYellowBand: category === 'short_term',
-    hasRedBand: category === 'export',
-    hasSeasonBand: category === 'seasonal' || category === 'classic_seasonal' || category === 'electric_seasonal',
-    expiryDay: 28,
-    expiryMonth: 11,
-    expiryYear: 2026,
     tuevYear,
     tuevMonth,
     badgeStateCode: selectedStateCode,
-    specialPerks: [],
-    legalBasis: 'FZV',
-    errors: [],
+    fontType,
+  });
+
+  const customPlate: PlateParseResult = {
+    ...parsedBase,
+    tuevYear,
+    tuevMonth,
+    badgeStateCode: selectedStateCode,
+    fontType: category === 'historical_din' ? 'DIN' : fontType,
+    seasonStart: category === 'seasonal' || category === 'classic_seasonal' || category === 'electric_seasonal' ? seasonStart : undefined,
+    seasonEnd: category === 'seasonal' || category === 'classic_seasonal' || category === 'electric_seasonal' ? seasonEnd : undefined,
+    hasSeasonBand: category === 'seasonal' || category === 'classic_seasonal' || category === 'electric_seasonal',
   };
 
   const handleDownloadSVG = () => {
-    // Generate clean SVG representation of the license plate
+    const isJapan = country === 'JP';
+    const width = isJapan ? 330 : 520;
+    const height = isJapan ? 165 : 110;
+    const bgFill =
+      customPlate.backgroundColor === 'yellow'
+        ? '#ffcc00'
+        : customPlate.backgroundColor === 'green'
+        ? '#1b5e20'
+        : customPlate.backgroundColor === 'blue'
+        ? '#0d47a1'
+        : customPlate.backgroundColor === 'red'
+        ? '#c62828'
+        : '#ffffff';
+
+    const textFill =
+      customPlate.textColor === 'red'
+        ? '#b91c1c'
+        : customPlate.textColor === 'green'
+        ? '#047857'
+        : customPlate.textColor === 'blue'
+        ? '#0d47a1'
+        : customPlate.textColor === 'white'
+        ? '#ffffff'
+        : '#111827';
+
     const svgContent = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 110" width="520" height="110">
-  <defs>
-    <linearGradient id="metal" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#f9fafb"/>
-      <stop offset="50%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#e5e7eb"/>
-    </linearGradient>
-  </defs>
-  <rect width="520" height="110" rx="12" fill="url(#metal)" stroke="${customPlate.textColor === 'red' ? '#b91c1c' : customPlate.textColor === 'green' ? '#047857' : '#111827'}" stroke-width="4.5"/>
-  <rect x="3" y="3" width="514" height="104" rx="9" fill="none" stroke="${customPlate.textColor === 'red' ? '#b91c1c' : customPlate.textColor === 'green' ? '#047857' : '#111827'}" stroke-width="1.2" opacity="0.4"/>
-  ${customPlate.hasEuroBand ? `
-  <rect x="0" y="0" width="46" height="110" rx="10" fill="#003399"/>
-  <text x="23" y="90" font-family="sans-serif" font-weight="bold" font-size="20" fill="#ffffff" text-anchor="middle">${country === 'AT' ? 'A' : 'D'}</text>
-  ` : ''}
-  <text x="270" y="76" font-family="'FE-Schrift', monospace, sans-serif" font-weight="bold" font-size="62" fill="${customPlate.textColor === 'red' ? '#b91c1c' : customPlate.textColor === 'green' ? '#047857' : '#111827'}" text-anchor="middle" letter-spacing="4">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+  <rect width="${width}" height="${height}" rx="12" fill="${bgFill}" stroke="${textFill}" stroke-width="4.5"/>
+  <rect x="3" y="3" width="${width - 6}" height="${height - 6}" rx="9" fill="none" stroke="${textFill}" stroke-width="1.2" opacity="0.3"/>
+  ${
+    customPlate.hasEuroBand
+      ? `
+  <rect x="0" y="0" width="46" height="${height}" rx="10" fill="#003399"/>
+  <text x="23" y="${height - 20}" font-family="sans-serif" font-weight="bold" font-size="20" fill="#ffffff" text-anchor="middle">${country === 'AT' ? 'A' : 'D'}</text>
+  `
+      : ''
+  }
+  ${
+    isJapan
+      ? `
+  <text x="${width / 2}" y="45" font-family="sans-serif" font-weight="bold" font-size="26" fill="${textFill}" text-anchor="middle" letter-spacing="4">
+    ${customPlate.topLineText || `${districtCode} ${classCode}`}
+  </text>
+  <text x="${width / 2}" y="125" font-family="'FE-Schrift', sans-serif" font-weight="bold" font-size="52" fill="${textFill}" text-anchor="middle" letter-spacing="6">
+    ${middleLetters} ${customPlate.numberPart}
+  </text>
+  `
+      : `
+  <text x="${width / 2 + (customPlate.hasEuroBand ? 15 : 0)}" y="${height * 0.65}" font-family="'FE-Schrift', monospace, sans-serif" font-weight="bold" font-size="54" fill="${textFill}" text-anchor="middle" letter-spacing="4">
     ${customPlate.normalizedPlate}
   </text>
+  ${
+    customPlate.bottomLineText
+      ? `<text x="${width / 2}" y="${height - 12}" font-family="sans-serif" font-weight="bold" font-size="11" fill="${textFill}" text-anchor="middle" letter-spacing="2" opacity="0.85">${customPlate.bottomLineText}</text>`
+      : ''
+  }
+  `
+  }
 </svg>
     `.trim();
 
@@ -138,7 +294,7 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `plate-${customPlate.normalizedPlate.replace(/\s+/g, '_')}.svg`;
+    link.download = `plate-${country}-${customPlate.normalizedPlate.replace(/[\s\/-]+/g, '_')}.svg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -156,10 +312,10 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               <Palette className="w-6 h-6 text-blue-400" />
-              Plate Studio & Generator
+              Plate Studio & Generator ({adapter.info.flag} {adapter.info.name})
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Craft custom license plates with custom districts, letters, numbers, TÜV inspection stickers, and seasonal bands.
+              Craft custom license plates with authentic typography, seals, slogans, and regional classifications.
             </p>
           </div>
           <button
@@ -196,25 +352,77 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
               onChange={(e) => handleCategoryChange(e.target.value as PlateCategory)}
               className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500 focus:outline-none"
             >
-              <option value="standard">Standard EU Plate (Euro-Kennzeichen)</option>
-              <option value="electric">Electric Vehicle (E-Kennzeichen)</option>
-              <option value="classic">Historic Oldtimer (H-Kennzeichen)</option>
-              <option value="seasonal">Seasonal Plate (Saisonkennzeichen)</option>
-              <option value="short_term">Short-Term Transfer (Kurzzeitkennzeichen 04)</option>
-              <option value="export">Export Customs Plate (Ausfuhrkennzeichen)</option>
-              <option value="dealer_collector_red">Dealer Red Plate (06 / 07)</option>
-              <option value="tax_exempt_green">Tax-Exempt Green Plate (Grünes Kennzeichen)</option>
-              <option value="diplomatic">Diplomatic Corps (Ambassador 0 / Embassy B)</option>
-              <option value="federal_armed_forces">Bundeswehr (Armed Forces Y)</option>
-              <option value="federal_police">Federal Police (BP)</option>
-              <option value="historical_din">Pre-1995 Historical DIN 1451 Plate</option>
+              {country === 'DE' && (
+                <>
+                  <option value="standard">Standard EU Plate (Euro-Kennzeichen)</option>
+                  <option value="electric">Electric Vehicle (E-Kennzeichen)</option>
+                  <option value="classic">Historic Oldtimer (H-Kennzeichen)</option>
+                  <option value="seasonal">Seasonal Plate (Saisonkennzeichen)</option>
+                  <option value="short_term">Short-Term Transfer (Kurzzeitkennzeichen 04)</option>
+                  <option value="export">Export Customs Plate (Ausfuhrkennzeichen)</option>
+                  <option value="dealer_collector_red">Dealer Red Plate (06 / 07)</option>
+                  <option value="tax_exempt_green">Tax-Exempt Green Plate (Grünes Kennzeichen)</option>
+                  <option value="diplomatic">Diplomatic Corps (Ambassador 0 / Embassy B)</option>
+                  <option value="federal_armed_forces">Bundeswehr (Armed Forces Y)</option>
+                  <option value="federal_police">Federal Police (BP)</option>
+                  <option value="historical_din">Pre-1995 Historical DIN 1451 Plate</option>
+                </>
+              )}
+              {country === 'AT' && (
+                <>
+                  <option value="standard">Standard Austrian Plate (Wien, Graz, etc.)</option>
+                  <option value="electric">Electric Vehicle (Green font / IG-L exempt)</option>
+                  <option value="federal_police">Federal Police (BP)</option>
+                  <option value="federal_armed_forces">Austrian Armed Forces (BH)</option>
+                </>
+              )}
+              {country === 'CH' && (
+                <>
+                  <option value="standard">Standard Cantonal Plate (Zürich, Bern...)</option>
+                  <option value="federal_armed_forces">Swiss Armed Forces (M)</option>
+                </>
+              )}
+              {country === 'JP' && (
+                <>
+                  <option value="standard">Standard Passenger Car (White / Green font)</option>
+                  <option value="kei_car">Kei Car Mini-Vehicle (Yellow / Black font)</option>
+                  <option value="commercial">Commercial Transport (Green / White font)</option>
+                  <option value="diplomatic">Diplomatic Corps (Blue / White font 外)</option>
+                </>
+              )}
+              {country === 'TH' && (
+                <>
+                  <option value="standard">Private Passenger Sedan (White / Black font)</option>
+                  <option value="commercial">Private Pickup / Taxi (Green / Yellow)</option>
+                  <option value="short_term">Temporary Registration (Red plate ป้ายแดง)</option>
+                </>
+              )}
+              {country === 'VN' && (
+                <>
+                  <option value="standard">Civilian Vehicle Plate (White / Black)</option>
+                  <option value="government">State & Government Plate (Blue / White 80A)</option>
+                  <option value="commercial">Commercial Transport (Yellow / Black)</option>
+                  <option value="federal_armed_forces">People’s Army Military Plate (Red / White QA)</option>
+                </>
+              )}
+              {country === 'AU' && (
+                <>
+                  <option value="standard">Standard State Issue Plate</option>
+                </>
+              )}
+              {country === 'NZ' && (
+                <>
+                  <option value="standard">Standard Series (ABC 123) / Personalised</option>
+                  <option value="classic">Legacy Pre-2001 Series (AA 1234)</option>
+                </>
+              )}
             </select>
           </div>
 
-          {/* District Selector */}
+          {/* District / State / Province Selector */}
           <div>
             <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
-              District Code (Unterscheidungszeichen)
+              {country === 'JP' ? 'Transport Branch Office (Kanji)' : country === 'AU' ? 'State / Territory' : country === 'VN' ? 'Province Code' : country === 'CH' ? 'Canton' : 'District Code'}
             </label>
             <div className="flex gap-2">
               <select
@@ -231,18 +439,35 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
             </div>
           </div>
 
+          {/* Japan Specific Class Code */}
+          {country === 'JP' && category !== 'diplomatic' && (
+            <div>
+              <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
+                Vehicle Class Code (3-digit)
+              </label>
+              <input
+                type="text"
+                maxLength={3}
+                value={classCode}
+                onChange={(e) => setClassCode(e.target.value)}
+                placeholder="e.g. 300, 500, 580"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-center font-mono text-lg focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          )}
+
           {/* Middle Letters & Numbers */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
-                Middle Letters
+                {country === 'JP' ? 'Hiragana / Character' : country === 'TH' ? 'Prefix Letters' : country === 'VN' ? 'Series Letter' : 'Letters'}
               </label>
               <input
                 type="text"
-                maxLength={2}
+                maxLength={4}
                 value={middleLetters}
-                onChange={(e) => setMiddleLetters(e.target.value.toUpperCase())}
-                placeholder="e.g. MW"
+                onChange={(e) => setMiddleLetters(e.target.value)}
+                placeholder={country === 'JP' ? 'さ' : 'MW'}
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-center font-mono text-lg uppercase focus:border-blue-500 focus:outline-none"
               />
             </div>
@@ -252,7 +477,7 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
               </label>
               <input
                 type="text"
-                maxLength={4}
+                maxLength={8}
                 value={numberPart}
                 onChange={(e) => setNumberPart(e.target.value)}
                 placeholder="e.g. 1234"
@@ -261,31 +486,33 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
             </div>
           </div>
 
-          {/* Suffix (E / H) */}
-          <div>
-            <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
-              Suffix Identifier
-            </label>
-            <div className="flex gap-3">
-              {[
-                { label: 'None', val: '' },
-                { label: 'E (Electric)', val: 'E' },
-                { label: 'H (Historic)', val: 'H' },
-              ].map((s) => (
-                <button
-                  key={s.val}
-                  onClick={() => setSuffix(s.val)}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition ${
-                    suffix === s.val
-                      ? 'bg-blue-600 text-white border-blue-500'
-                      : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
+          {/* Suffix (for Germany) */}
+          {country === 'DE' && (
+            <div>
+              <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
+                Suffix Identifier
+              </label>
+              <div className="flex gap-3">
+                {[
+                  { label: 'None', val: '' },
+                  { label: 'E (Electric)', val: 'E' },
+                  { label: 'H (Historic)', val: 'H' },
+                ].map((s) => (
+                  <button
+                    key={s.val}
+                    onClick={() => setSuffix(s.val)}
+                    className={`flex-1 py-2 text-xs font-semibold rounded-xl border transition ${
+                      suffix === s.val
+                        ? 'bg-blue-600 text-white border-blue-500'
+                        : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right Column: Stickers, Badges & Seasons */}
@@ -295,77 +522,86 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
             Inspection & Badges
           </h3>
 
-          {/* TÜV Year & Month */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
-                HU/TÜV Year
-              </label>
-              <select
-                value={tuevYear}
-                onChange={(e) => setTuevYear(parseInt(e.target.value, 10))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500 focus:outline-none"
-              >
-                {[2024, 2025, 2026, 2027, 2028, 2029, 2030].map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+          {/* TÜV Year & Month (For DE and AT) */}
+          {(country === 'DE' || country === 'AT') ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
+                  HU/TÜV Year
+                </label>
+                <select
+                  value={tuevYear}
+                  onChange={(e) => setTuevYear(parseInt(e.target.value, 10))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500 focus:outline-none"
+                >
+                  {[2024, 2025, 2026, 2027, 2028, 2029, 2030].map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
+                  HU/TÜV Month
+                </label>
+                <select
+                  value={tuevMonth}
+                  onChange={(e) => setTuevMonth(parseInt(e.target.value, 10))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500 focus:outline-none"
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                    <option key={m} value={m}>
+                      Month {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
-                HU/TÜV Month
-              </label>
-              <select
-                value={tuevMonth}
-                onChange={(e) => setTuevMonth(parseInt(e.target.value, 10))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500 focus:outline-none"
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>
-                    Month {m}
-                  </option>
-                ))}
-              </select>
+          ) : (
+            <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-700/60 text-xs text-slate-300">
+              <span className="font-bold block mb-1 text-blue-300">Regional Authority Specifications:</span>
+              Vehicle registration adheres to {adapter.info.name} transport ministry regulations. Official seals and security markings are rendered automatically.
             </div>
-          </div>
+          )}
 
-          {/* Federal State Seal Badge */}
-          <div>
-            <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
-              Official State Coat of Arms (Zulassungsplakette)
-            </label>
-            <select
-              value={selectedStateCode}
-              onChange={(e) => setSelectedStateCode(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500 focus:outline-none capitalize"
-            >
-              {[
-                'baden-wuerttemberg',
-                'bayern',
-                'berlin',
-                'brandenburg',
-                'bremen',
-                'bundesadler',
-                'hamburg',
-                'hessen',
-                'mecklenburg-vorpommern',
-                'niedersachsen',
-                'nordrhein-westfalen',
-                'rheinland-pfalz',
-                'saarland',
-                'sachsen-anhalt',
-                'sachsen',
-                'schleswig-holstein',
-                'thueringen',
-              ].map((st) => (
-                <option key={st} value={st}>
-                  {st.replace(/-/g, ' ')}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Federal State Seal Badge (for Germany) */}
+          {country === 'DE' && (
+            <div>
+              <label className="text-xs uppercase font-semibold text-slate-400 block mb-2">
+                Official State Coat of Arms (Zulassungsplakette)
+              </label>
+              <select
+                value={selectedStateCode}
+                onChange={(e) => setSelectedStateCode(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:border-blue-500 focus:outline-none capitalize"
+              >
+                {[
+                  'baden-wuerttemberg',
+                  'bayern',
+                  'berlin',
+                  'brandenburg',
+                  'bremen',
+                  'bundesadler',
+                  'hamburg',
+                  'hessen',
+                  'mecklenburg-vorpommern',
+                  'niedersachsen',
+                  'nordrhein-westfalen',
+                  'rheinland-pfalz',
+                  'saarland',
+                  'sachsen-anhalt',
+                  'sachsen',
+                  'schleswig-holstein',
+                  'thueringen',
+                ].map((st) => (
+                  <option key={st} value={st}>
+                    {st.replace(/-/g, ' ')}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Seasonal Window (Only shown when seasonal active) */}
           {(category === 'seasonal' || category === 'classic_seasonal' || category === 'electric_seasonal') && (
@@ -420,7 +656,7 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
                     : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
                 }`}
               >
-                FE-Schrift (Modern Euro)
+                FE-Schrift (Modern)
               </button>
               <button
                 onClick={() => setFontType('DIN')}
@@ -430,7 +666,7 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
                     : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
                 }`}
               >
-                DIN 1451 (Pre-1995 Classic)
+                DIN 1451 (Classic)
               </button>
             </div>
           </div>
