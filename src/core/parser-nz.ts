@@ -1,5 +1,4 @@
 import { PlateParseResult, PlateCategory } from '../types';
-import { NZ_REGIONS } from '../data/districts-nz';
 
 export function parseNewZealandPlate(input: string, userOverrides?: Partial<PlateParseResult>): PlateParseResult {
   const rawInput = input;
@@ -29,9 +28,12 @@ export function parseNewZealandPlate(input: string, userOverrides?: Partial<Plat
     fontType: 'FE',
   };
 
+  const finalize = (res: PlateParseResult): PlateParseResult =>
+    userOverrides ? { ...res, ...userOverrides } : res;
+
   if (!cleaned) {
     errors.push('Please enter a New Zealand license plate string.');
-    return baseResult;
+    return finalize(baseResult);
   }
 
   // 1. Current standard format: 3 letters + 3 digits (e.g. "ABC123", "KOB789")
@@ -39,7 +41,7 @@ export function parseNewZealandPlate(input: string, userOverrides?: Partial<Plat
   if (standardMatch) {
     const letters = standardMatch[1];
     const nums = standardMatch[2];
-    return {
+    return finalize({
       ...baseResult,
       isValid: true,
       category: 'standard',
@@ -53,7 +55,7 @@ export function parseNewZealandPlate(input: string, userOverrides?: Partial<Plat
       middleLetters: letters,
       numberPart: nums,
       specialPerks: ['Continuous vehicle licensing (rego) & WoF integration'],
-    };
+    });
   }
 
   // 2. Legacy pre-2001 format: 2 letters + 4 digits (e.g. "AA1234", "ZZ9999")
@@ -61,7 +63,7 @@ export function parseNewZealandPlate(input: string, userOverrides?: Partial<Plat
   if (legacyMatch) {
     const letters = legacyMatch[1];
     const nums = legacyMatch[2];
-    return {
+    return finalize({
       ...baseResult,
       isValid: true,
       category: 'classic',
@@ -74,13 +76,13 @@ export function parseNewZealandPlate(input: string, userOverrides?: Partial<Plat
       state: 'New Zealand',
       middleLetters: letters,
       numberPart: nums,
-    };
+    });
   }
 
   // 3. Personalised plate (1 to 6 characters, e.g. "KIWI", "TURBO", "KOBET")
   const personalisedMatch = cleaned.match(/^[A-Z0-9]{1,6}$/);
   if (personalisedMatch) {
-    return {
+    return finalize({
       ...baseResult,
       isValid: true,
       category: 'standard',
@@ -93,11 +95,11 @@ export function parseNewZealandPlate(input: string, userOverrides?: Partial<Plat
       state: 'New Zealand',
       numberPart: cleaned,
       specialPerks: ['Lifetime ownership rights and transferable asset status'],
-    };
+    });
   }
 
   errors.push(`Could not parse New Zealand plate "${cleaned}". Standard format: "ABC 123" (e.g. "KOB 789"), legacy "AA 1234", or custom personalised "KIWI".`);
-  return baseResult;
+  return finalize(baseResult);
 }
 
 export function getRandomNewZealandPlate(): { plate: string; category: PlateCategory } {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, ShieldAlert, Zap, History, Calendar, CheckCircle2, FileText, AlertOctagon, Globe, Sparkles } from 'lucide-react';
+import { BookOpen, ShieldAlert, History, Calendar, FileText, AlertOctagon, Globe, Sparkles } from 'lucide-react';
 import { CountryCode } from '../../types';
 import { SUPPORTED_COUNTRIES } from '../../core/country-registry';
 

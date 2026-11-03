@@ -237,7 +237,7 @@ export function parseGermanPlate(input: string, userOverrides?: Partial<PlatePar
         ...baseResult,
         isValid: true,
         category: 'dealer_collector_red',
-        categoryName: isClassicCollector ? 'Classic Collector Red Plate (07-Kennzeichen)' : 'Dealer Red Plate (06-Kennzeichen)',
+        categoryName: isClassicCollector ? 'Classic Collector Red Plate (07-Kennzeichen)' : isDealer ? 'Dealer Red Plate (06-Kennzeichen)' : isTesting ? 'Inspection Red Plate (05-Kennzeichen)' : 'Dealer Red Plate (06-Kennzeichen)',
         categoryNameDe: isClassicCollector ? 'Rotes Oldtimer-Kennzeichen (07)' : 'Rotes Händlerkennzeichen (06)',
         categoryDescription: desc,
         normalizedPlate: `${distCode} ${numPart}`,

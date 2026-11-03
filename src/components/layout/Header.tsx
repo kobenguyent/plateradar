@@ -1,6 +1,6 @@
 import React from 'react';
 import { CountryCode } from '../../types';
-import { SUPPORTED_COUNTRIES } from '../../core/country-registry';
+import { SUPPORTED_COUNTRIES, CountryAdapters } from '../../core/country-registry';
 import { ShieldCheck, Search, Palette, Trophy, BookOpen, Globe2 } from 'lucide-react';
 
 interface HeaderProps {

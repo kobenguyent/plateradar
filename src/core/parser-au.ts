@@ -38,9 +38,12 @@ export function parseAustralianPlate(input: string, userOverrides?: Partial<Plat
     fontType: 'FE',
   };
 
+  const finalize = (res: PlateParseResult): PlateParseResult =>
+    userOverrides ? { ...res, ...userOverrides } : res;
+
   if (!cleaned) {
     errors.push('Please enter an Australian license plate string.');
-    return baseResult;
+    return finalize(baseResult);
   }
 
   // Check if a state code was prepended (e.g. "NSW AA-12-BB" or "VIC 1AA-2BB")
@@ -81,7 +84,7 @@ export function parseAustralianPlate(input: string, userOverrides?: Partial<Plat
   const textColor = (state.color as PlateParseResult['textColor']) || 'black';
   const bgColor = (state.bg as PlateParseResult['backgroundColor']) || 'white';
 
-  return {
+  return finalize({
     ...baseResult,
     isValid: true,
     category: 'standard',
@@ -98,7 +101,7 @@ export function parseAustralianPlate(input: string, userOverrides?: Partial<Plat
     backgroundColor: bgColor,
     bottomLineText: state.slogan,
     specialPerks: ['Compulsory Third Party (CTP) insurance integration'],
-  };
+  });
 }
 
 export function getRandomAustralianPlate(): { plate: string; category: PlateCategory } {
