@@ -1,6 +1,13 @@
 import React, { useRef } from 'react';
 import { PlateParseResult } from '../../types';
 import { getTuevColor, getMonthRotationDeg } from '../../data/tuev-colors';
+import {
+  USStateDecoration,
+  AUStateDecoration,
+  JPIllustratedDecoration,
+  THGraphicDecoration,
+  VNSealDecoration,
+} from './PlateDecorations';
 
 interface PlateRendererProps {
   plate: PlateParseResult;
@@ -230,14 +237,17 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
         )}
 
         {/* --- JAPAN SPECIAL 2-LINE DISPLAY --- */}
+        {/* --- JAPAN SPECIAL 2-LINE DISPLAY --- */}
         {isJapan ? (
-          <div className="flex-1 flex flex-col justify-between items-center py-2 px-3 h-full">
+          <div className="relative flex-1 flex flex-col justify-between items-center py-2 px-3 h-full overflow-hidden">
+            <JPIllustratedDecoration plate={plate} />
+
             {/* Top Row: Left Sealing Bolt, Office Kanji + Class, Right Screw */}
-            <div className="w-full flex items-center justify-between px-2 pt-1">
+            <div className="w-full flex items-center justify-between px-2 pt-1 z-10">
               {/* Sealing Bolt (Fuin 封印) */}
               {showScrews && (
                 <div
-                  className="relative w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-tr from-slate-400 via-slate-200 to-slate-400 border border-slate-500 shadow-md flex items-center justify-center"
+                  className="relative w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-tr from-slate-400 via-slate-200 to-slate-400 border border-slate-500 shadow-md flex items-center justify-center shrink-0"
                   title="Official Japanese Vehicle Sealing Bolt (封印 Fuin)"
                 >
                   <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full border border-slate-400/80 flex items-center justify-center bg-slate-300">
@@ -255,12 +265,12 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
 
               {/* Right Screw Cap */}
               {showScrews && (
-                <div className="w-3 h-3 md:w-3.5 md:h-3.5 rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 border border-slate-600 shadow-inner opacity-80" />
+                <div className="w-3 h-3 md:w-3.5 md:h-3.5 rounded-full bg-gradient-to-tr from-slate-400 to-slate-200 border border-slate-600 shadow-inner opacity-80 shrink-0" />
               )}
             </div>
 
             {/* Bottom Row: Hiragana + Number (e.g. さ 12-34) */}
-            <div className="flex items-center justify-center gap-3 md:gap-4 my-auto">
+            <div className="flex items-center justify-center gap-3 md:gap-4 my-auto z-10">
               {plate.category === 'diplomatic' ? (
                 <div className="flex items-center gap-3">
                   <div className="w-7 h-7 md:w-9 md:h-9 rounded-full border-2 border-white flex items-center justify-center font-bold text-white text-base md:text-xl">
@@ -283,43 +293,14 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
             </div>
           </div>
         ) : isUSA ? (
-          /* --- US SPECIAL 12x6 INCH PLATE DISPLAY --- */
-          <div className="flex-1 flex flex-col justify-between items-center py-2 px-3 h-full w-full">
-            {/* Top Row: Registration Month Sticker, State Name, Registration Year Sticker */}
-            <div className="w-full flex items-center justify-between px-2 pt-0.5 z-10">
-              {/* Month Decal */}
-              <div className="w-5 h-4 md:w-6 md:h-5 rounded-[2px] bg-blue-700 text-white font-mono font-bold text-[8px] md:text-[9px] flex items-center justify-center shadow-inner border border-blue-900 leading-none">
-                OCT
-              </div>
-
-              {/* State Name Header */}
-              <div className="flex items-center gap-1.5">
-                <span
-                  className={`text-sm md:text-lg font-black tracking-widest font-sans ${
-                    plate.districtCode === 'CA' ? 'text-red-700 italic tracking-normal' : textColorClass
-                  }`}
-                >
-                  {plate.topLineText || (plate.districtName ? plate.districtName.toUpperCase() : 'CALIFORNIA')}
-                </span>
-              </div>
-
-              {/* Year Decal */}
-              <div className="w-5 h-4 md:w-6 md:h-5 rounded-[2px] bg-amber-400 text-black font-mono font-bold text-[8px] md:text-[9px] flex items-center justify-center shadow-inner border border-amber-600 leading-none">
-                26
-              </div>
-            </div>
+          /* --- US SPECIAL 12x6 INCH PLATE DISPLAY WITH AUTHENTIC STATE DECORATIONS --- */
+          <div className="relative flex-1 flex flex-col justify-between items-center py-2 px-3 h-full w-full overflow-hidden">
+            <USStateDecoration plate={plate} textColorClass={textColorClass} />
 
             {/* Center Row: Main Alphanumeric Registration Serial */}
-            <div className="flex items-center justify-center my-auto">
+            <div className="flex items-center justify-center my-auto z-10">
               <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm text-3xl md:text-5xl`}>
                 {plate.normalizedPlate}
-              </span>
-            </div>
-
-            {/* Bottom Row: State Slogan */}
-            <div className="w-full flex items-center justify-center pb-0.5">
-              <span className={`text-[8px] md:text-[10px] font-bold tracking-widest uppercase opacity-80 ${textColorClass} truncate max-w-[90%]`}>
-                {plate.bottomLineText || 'THE GOLDEN STATE'}
               </span>
             </div>
           </div>
@@ -327,8 +308,8 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
           /* --- MAIN CENTER PLATE BODY FOR STANDARD COUNTRIES --- */
           <div className="flex-1 flex flex-col justify-center items-center px-2 md:px-4 overflow-hidden">
             <div className="flex items-center justify-center gap-2 md:gap-3 w-full">
-              {/* Germany & Austria Standard Display */}
-              {(plate.country === 'DE' || plate.country === 'AT') && (
+              {/* Germany Standard Display */}
+              {plate.country === 'DE' && (
                 <>
                   {/* District Code */}
                   <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm`}>
@@ -390,6 +371,45 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
                 </>
               )}
 
+              {/* Austria Standard Display */}
+              {plate.country === 'AT' && (
+                <>
+                  {/* District Code */}
+                  <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm`}>
+                    {plate.districtCode || (plate.normalizedPlate.split(' ')[0] || 'W')}
+                  </span>
+
+                  {/* Prominent Austrian Landeswappen in center */}
+                  <div
+                    className="w-6 h-7 md:w-8 md:h-10 flex items-center justify-center shrink-0 z-10 mx-1"
+                    title={`Landeswappen: ${plate.state || 'Österreich'}`}
+                  >
+                    <img
+                      src={badgePath}
+                      alt={plate.state || 'Landeswappen'}
+                      className="w-full h-full object-contain drop-shadow-sm"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = './badges/at/W.svg';
+                      }}
+                    />
+                  </div>
+
+                  {/* Numbers & Serial Letters */}
+                  <div className="flex items-center gap-1 md:gap-2">
+                    {plate.numberPart && (
+                      <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm`}>
+                        {plate.numberPart}
+                      </span>
+                    )}
+                    {plate.middleLetters && (
+                      <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm`}>
+                        {plate.middleLetters}
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
+
               {/* Switzerland Format */}
               {plate.country === 'CH' && (
                 <div className="flex items-center gap-3">
@@ -404,11 +424,12 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
 
               {/* Thailand Format */}
               {plate.country === 'TH' && (
-                <div className="flex items-center gap-2">
-                  <span className={`font-bold tracking-wider ${textColorClass} font-sans`}>
+                <div className="relative flex items-center justify-center gap-2 w-full">
+                  <THGraphicDecoration plate={plate} />
+                  <span className={`font-bold tracking-wider ${textColorClass} font-sans z-10`}>
                     {plate.middleLetters || '1กข'}
                   </span>
-                  <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm`}>
+                  <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm z-10`}>
                     {plate.numberPart || '1234'}
                   </span>
                 </div>
@@ -420,7 +441,7 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
                   <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm`}>
                     {plate.districtCode}{plate.middleLetters || ''}
                   </span>
-                  <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} opacity-60`}>-</span>
+                  <VNSealDecoration plate={plate} />
                   <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm`}>
                     {plate.numberPart || '123.45'}
                   </span>
@@ -429,9 +450,12 @@ export const PlateRenderer: React.FC<PlateRendererProps> = ({
 
               {/* Australia Format */}
               {plate.country === 'AU' && (
-                <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm text-3xl md:text-5xl`}>
-                  {plate.normalizedPlate}
-                </span>
+                <div className="relative flex items-center justify-center w-full">
+                  <AUStateDecoration plate={plate} textColorClass={textColorClass} />
+                  <span className={`font-bold tracking-wider ${textColorClass} ${fontClass} drop-shadow-sm text-3xl md:text-5xl z-10`}>
+                    {plate.normalizedPlate}
+                  </span>
+                </div>
               )}
 
               {/* New Zealand Format */}
