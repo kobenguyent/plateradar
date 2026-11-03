@@ -1,37 +1,65 @@
 import React, { useState, useMemo } from 'react';
 import { CountryCode, District } from '../../types';
-import { CountryAdapters } from '../../core/country-registry';
+import { CountryAdapters, SUPPORTED_COUNTRIES } from '../../core/country-registry';
 import { GERMAN_DIPLOMATIC_CODES } from '../../data/diplomatic-codes-de';
-import { Search, MapPin, Building, BookOpen, ExternalLink } from 'lucide-react';
+import { Search, MapPin, Building, BookOpen, ExternalLink, Globe2 } from 'lucide-react';
 
 interface DistrictDirectoryProps {
   country: CountryCode;
   onInspectPlate: (plateText: string) => void;
+  onSwitchCountry?: (country: CountryCode) => void;
 }
 
-export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, onInspectPlate }) => {
+export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ 
+  country, 
+  onInspectPlate,
+  onSwitchCountry 
+}) => {
   const adapter = CountryAdapters[country];
   
   // Base geographic districts
   const baseDistricts = adapter.getDistricts();
 
-  // If Germany, also enrich with Diplomatic & International Agency codes (320 AMLA, 17 USA, etc.)
+  // Country-specific enriching (e.g. diplomatic & federal codes)
   const allEntries: (District & { isDiplomatic?: boolean; samplePlate?: string })[] = useMemo(() => {
-    if (country !== 'DE') {
-      return baseDistricts;
+    if (country === 'DE') {
+      const diplomaticEntries = Object.values(GERMAN_DIPLOMATIC_CODES).map((d) => ({
+        code: `0 ${d.code}`,
+        name: d.country,
+        state: 'Diplomatisches Korps / Bund',
+        stateCode: 'bundesadler',
+        fullName: `${d.flag} ${d.countryDe}`,
+        isDiplomatic: true,
+        samplePlate: `0 ${d.code}-1`,
+      }));
+      return [...baseDistricts, ...diplomaticEntries];
     }
 
-    const diplomaticEntries = Object.values(GERMAN_DIPLOMATIC_CODES).map((d) => ({
-      code: `0 ${d.code}`,
-      name: d.country,
-      state: 'Diplomatisches Korps / Bund',
-      stateCode: 'bundesadler',
-      fullName: `${d.flag} ${d.countryDe}`,
-      isDiplomatic: true,
-      samplePlate: `0 ${d.code}-1`,
-    }));
+    if (country === 'US') {
+      const usSpecial = [
+        {
+          code: 'DOS',
+          name: 'U.S. Department of State',
+          state: 'Federal Diplomatic (OFM)',
+          stateCode: 'dc',
+          fullName: 'Office of Foreign Missions (OFM) Diplomatic Corps',
+          slogan: 'Vienna Convention Diplomatic Immunity',
+          samplePlate: 'D 1234',
+        },
+        {
+          code: 'USG',
+          name: 'General Services Administration',
+          state: 'Federal Civilian Fleet',
+          stateCode: 'dc',
+          fullName: 'U.S. Government Official Interagency Fleet',
+          slogan: 'For Official Use Only',
+          samplePlate: 'G12-3456',
+        },
+      ];
+      return [...baseDistricts, ...usSpecial];
+    }
 
-    return [...baseDistricts, ...diplomaticEntries];
+    return baseDistricts;
   }, [country, baseDistricts]);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,7 +94,8 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
         cleanCode.includes(cleanQ) ||
         d.name.toLowerCase().includes(q) ||
         d.fullName.toLowerCase().includes(q) ||
-        d.state.toLowerCase().includes(q);
+        d.state.toLowerCase().includes(q) ||
+        (d.slogan && d.slogan.toLowerCase().includes(q));
 
       // State matches
       const matchesState = selectedState === 'all' || d.state === selectedState;
@@ -82,18 +111,28 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
     });
   }, [allEntries, searchQuery, selectedState, filterType]);
 
+  const searchPlaceholder =
+    country === 'DE' ? 'Search by district code (e.g. B, 0 320, M, DAH) or city...' :
+    country === 'US' ? 'Search by state code (e.g. CA, NY, TX) or state name (California, Texas)...' :
+    country === 'JP' ? 'Search by office (e.g. 品川, Shinagawa, 横浜)...' :
+    country === 'TH' ? 'Search by province (e.g. Bangkok, Chiang Mai, เชียงใหม่)...' :
+    country === 'VN' ? 'Search by code (e.g. 29, 30, 51, 80) or city (Hà Nội)...' :
+    country === 'AU' ? 'Search by state (e.g. NSW, VIC, QLD)...' :
+    country === 'NZ' ? 'Search by region (e.g. Auckland, Wellington)...' :
+    'Search by code or region...';
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Search Header */}
       <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 backdrop-blur shadow-xl">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               <BookOpen className="w-6 h-6 text-blue-400" />
-              {adapter.info.name} District Code &amp; Agency Directory
+              {adapter.info.flag} {adapter.info.name} District Code &amp; Jurisdiction Directory
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Browse and search through all {allEntries.length} official registration districts, international agencies (e.g. 320 AMLA), and diplomatic codes.
+              Browse and search through all {allEntries.length} official registration districts, states, and special authorities.
             </p>
           </div>
           <div className="flex items-center gap-2 bg-slate-900/80 px-3.5 py-1.5 rounded-xl border border-slate-700 text-xs text-slate-300 font-mono">
@@ -101,6 +140,27 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
             <span className="font-bold text-blue-400 text-sm">{filteredDistricts.length}</span>
             <span>/ {allEntries.length}</span>
           </div>
+        </div>
+
+        {/* Quick Country Selector Switcher inside Directory */}
+        <div className="flex flex-wrap items-center gap-1.5 mb-5 pt-3 border-t border-slate-700/60">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 flex items-center gap-1">
+            <Globe2 className="w-3.5 h-3.5 text-blue-400" /> Country:
+          </span>
+          {SUPPORTED_COUNTRIES.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => onSwitchCountry && onSwitchCountry(c.id)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                country === c.id
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-slate-900/70 text-slate-300 hover:text-white hover:bg-slate-700/70 border border-slate-700/60'
+              }`}
+            >
+              <span>{c.flag}</span>
+              <span>{c.name}</span>
+            </button>
+          ))}
         </div>
 
         {/* Search input & Filter row */}
@@ -111,7 +171,7 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by code (e.g. B, 0 320, M, DAH) or city / agency name..."
+              placeholder={searchPlaceholder}
               className="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 rounded-xl pl-11 pr-4 py-2.5 text-white placeholder-slate-500 text-sm focus:outline-none transition"
             />
           </div>
@@ -139,8 +199,8 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
             >
               <option value="all">All Classifications</option>
               <option value="active">Active Primary Districts</option>
-              <option value="historical">Historic / Liberalized Codes</option>
-              {country === 'DE' && <option value="diplomatic">Diplomatic &amp; Agency Codes (0 XX)</option>}
+              {country === 'DE' && <option value="historical">Historic / Liberalized Codes</option>}
+              {(country === 'DE' || country === 'US') && <option value="diplomatic">Diplomatic &amp; Agency Codes</option>}
             </select>
           </div>
         </div>
@@ -178,7 +238,7 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  {/* Plate Code Tag with FE-Schrift style */}
+                  {/* Plate Code Tag */}
                   <span className={`font-mono font-bold text-2xl px-3 py-1 rounded-lg border shadow-inner ${
                     district.isDiplomatic 
                       ? 'bg-blue-950 text-blue-300 border-blue-700' 
@@ -208,7 +268,7 @@ export const DistrictDirectory: React.FC<DistrictDirectoryProps> = ({ country, o
                   {district.name}
                 </h3>
                 <p className="text-xs text-slate-400 line-clamp-2 mt-1 mb-3">
-                  {district.fullName}
+                  {district.slogan ? district.slogan : district.fullName}
                 </p>
               </div>
 

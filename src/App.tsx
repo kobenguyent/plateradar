@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CountryCode } from './types';
+import { DEFAULT_PLATE_BY_COUNTRY } from './core/country-registry';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { PlateChecker } from './components/checker/PlateChecker';
@@ -12,6 +13,12 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'checker' | 'directory' | 'studio' | 'quiz' | 'knowledge'>('checker');
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>('DE');
   const [prefilledPlate, setPrefilledPlate] = useState<string>('B MW 1234 E');
+
+  const handleCountryChange = (country: CountryCode) => {
+    setSelectedCountry(country);
+    const newPlate = DEFAULT_PLATE_BY_COUNTRY[country] || 'B MW 1234 E';
+    setPrefilledPlate(newPlate);
+  };
 
   const handleInspectFromDirectory = (plateText: string) => {
     setPrefilledPlate(plateText);
@@ -32,7 +39,7 @@ export const App: React.FC = () => {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         selectedCountry={selectedCountry}
-        setSelectedCountry={setSelectedCountry}
+        setSelectedCountry={handleCountryChange}
       />
 
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 md:py-12">
@@ -48,8 +55,10 @@ export const App: React.FC = () => {
 
         {activeTab === 'directory' && (
           <DistrictDirectory
+            key={selectedCountry}
             country={selectedCountry}
             onInspectPlate={handleInspectFromDirectory}
+            onSwitchCountry={handleCountryChange}
           />
         )}
 
@@ -57,15 +66,24 @@ export const App: React.FC = () => {
           <PlateStudio
             key={selectedCountry}
             country={selectedCountry}
+            onCountryChange={handleCountryChange}
           />
         )}
 
         {activeTab === 'quiz' && (
-          <PlateQuiz />
+          <PlateQuiz
+            key={selectedCountry}
+            country={selectedCountry}
+            onCountryChange={handleCountryChange}
+          />
         )}
 
         {activeTab === 'knowledge' && (
-          <KnowledgeHub />
+          <KnowledgeHub
+            key={selectedCountry}
+            country={selectedCountry}
+            onCountryChange={handleCountryChange}
+          />
         )}
       </main>
 

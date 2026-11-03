@@ -1,18 +1,221 @@
 import React from 'react';
-import { BookOpen, ShieldAlert, Zap, History, Calendar, CheckCircle2, FileText, AlertOctagon } from 'lucide-react';
+import { BookOpen, ShieldAlert, Zap, History, Calendar, CheckCircle2, FileText, AlertOctagon, Globe, Sparkles } from 'lucide-react';
+import { CountryCode } from '../../types';
+import { SUPPORTED_COUNTRIES } from '../../core/country-registry';
 
-export const KnowledgeHub: React.FC = () => {
+interface KnowledgeHubProps {
+  country?: CountryCode;
+  onCountryChange?: (country: CountryCode) => void;
+}
+
+export const KnowledgeHub: React.FC<KnowledgeHubProps> = ({ country = 'DE', onCountryChange }) => {
+  const activeCountry = SUPPORTED_COUNTRIES.find((c) => c.id === country) || SUPPORTED_COUNTRIES[0];
+
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-      {/* Header */}
+      {/* Header & Country Selector */}
       <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 md:p-8 backdrop-blur shadow-xl">
-        <h2 className="text-2xl md:text-3xl font-extrabold text-white flex items-center gap-3">
-          <BookOpen className="w-8 h-8 text-blue-400" />
-          European License Plate Knowledge & Regulations Hub
-        </h2>
-        <p className="text-slate-300 mt-2 text-sm md:text-base leading-relaxed">
-          Comprehensive guide to vehicle registration laws, legal plate classifications, FE-Schrift anti-forgery typography, and federal inspection sticker specifications under the German <em>Fahrzeug-Zulassungsverordnung (FZV)</em>.
-        </p>
+        {/* Country Selector Pills */}
+        {onCountryChange && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 border-b border-slate-700/60 scrollbar-thin">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+              Knowledge Country:
+            </span>
+            {SUPPORTED_COUNTRIES.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => onCountryChange(c.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 ${
+                  country === c.id
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                    : 'bg-slate-900/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60'
+                }`}
+              >
+                <span>{c.flag}</span>
+                <span>{c.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-white flex items-center gap-3">
+              <BookOpen className="w-8 h-8 text-blue-400" />
+              License Plate Knowledge & Regulations Hub
+            </h2>
+            <p className="text-slate-300 mt-2 text-sm md:text-base leading-relaxed">
+              Comprehensive regulatory guide to vehicle registration laws, legal plate classifications, typography standards, anti-forgery measures, and international conventions.
+            </p>
+          </div>
+          <div className="hidden sm:flex flex-col items-center justify-center p-3.5 bg-slate-900/80 border border-slate-700 rounded-2xl shrink-0">
+            <span className="text-3xl">{activeCountry.flag}</span>
+            <span className="text-xs font-bold text-white mt-1 uppercase font-mono">{activeCountry.id}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Country Spotlight Section */}
+      <div className="bg-gradient-to-br from-blue-950/40 via-slate-800/90 to-slate-900 border border-blue-500/30 rounded-2xl p-6 shadow-xl space-y-4">
+        <div className="flex items-center gap-2.5 text-blue-400">
+          <Sparkles className="w-5 h-5 text-amber-400" />
+          <h3 className="font-extrabold text-lg text-white">
+            {activeCountry.flag} {activeCountry.name} ({activeCountry.nativeName}) — National Regulatory Spotlight
+          </h3>
+        </div>
+
+        {country === 'DE' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-300">
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">FZV Legal Framework</strong>
+              Under the German <em>Fahrzeug-Zulassungsverordnung (FZV)</em>, license plates are limited to 8 characters max. Plates are issued with FE-Schrift typography to prevent character tampering.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Eco &amp; Historic Suffixes</strong>
+              'E' denotes Electric/PHEV vehicles (granting bus lane and charging station rights); 'H' denotes certified 30+ year oldtimers exempt from low-emission zones (Umweltzone).
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Inspection &amp; State Badges</strong>
+              The rear plate features the 6-year rotating Hauptuntersuchung (HU/TÜV) sticker with month due at 12 o'clock, alongside the official state seal (Zulassungsplakette).
+            </div>
+          </div>
+        )}
+
+        {country === 'US' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-300">
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">50 States + D.C. Autonomy</strong>
+              Vehicle registrations in the United States are governed by individual state DMVs. Each state features distinct graphic plate designs, state nicknames, and slogans.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">GSA Federal Civilian Fleet</strong>
+              Federal government civilian vehicles bear "G"-prefix plates (e.g., G12-3456) managed under the General Services Administration (GSA Fleet) without state taxes.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">U.S. Dept of State (OFM)</strong>
+              Foreign diplomatic vehicles carry federal blue reflective plates issued by the Office of Foreign Missions with "D" (Diplomat), "C" (Consul), or "S" (Staff).
+            </div>
+          </div>
+        )}
+
+        {country === 'JP' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-300">
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Transport Branch Offices &amp; Class</strong>
+              Top line shows the issuing branch office in Kanji (品川, 横浜, 大阪...) and 3-digit class code: 3xx for passenger cars &gt;2000cc, 5xx for compact cars, 2xx for commercial.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Fuin (封印) Prefecture Seal</strong>
+              Rear plates have a tamper-evident stamped aluminum cup (封印) bolted over the top-left screw, embossed with the prefecture's initial Kanji character (e.g. 東 for Tokyo).
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Kei Car (軽自動車) Standard</strong>
+              Vehicles under 660cc engine capacity carry distinctive yellow plates with black characters. Commercial transport vehicles carry green plates with white characters.
+            </div>
+          </div>
+        )}
+
+        {country === 'TH' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-300">
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Department of Land Transport (DLT)</strong>
+              Managed under the Motor Vehicle Act B.E. 2522. Thai consonant series followed by 1 to 4 digits, with full province name stamped in Thai script on the bottom row.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Color-Coded Classification</strong>
+              White/black for passenger sedans; white/green for private utility pickups; yellow/black for public metered taxis and buses; red/black (ป้ายแดง) for temporary dealer transit.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Lucky Number Auctions</strong>
+              Auspicious combinations (single digits, quadruple 8s, 9s, and twin-letter combinations like 8กก) are auctioned off as illustrated graphic plates for public road safety funds.
+            </div>
+          </div>
+        )}
+
+        {country === 'VN' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-300">
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Circular 24/2023 Identity Reform</strong>
+              The Ministry of Public Security enacted "Biển số định danh", binding license plates permanently to the citizen's personal identification number rather than the chassis.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Province Prefix System</strong>
+              2-digit code identifies registration province (29-33/40 for Hà Nội, 50-59 for TP. Hồ Chí Minh, 43 for Đà Nẵng, 15 for Hải Phòng, 80 for central government).
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Color Authority Hierarchy</strong>
+              White for civilian cars; blue for state ministries &amp; police; yellow for commercial transport &amp; Grab ride-hailing; crimson red for the People's Army (Quân đội).
+            </div>
+          </div>
+        )}
+
+        {country === 'AU' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-300">
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">State Transport Jurisdiction</strong>
+              Vehicle licensing (Rego) is regulated by state authorities (Transport for NSW, VicRoads, Translink QLD, DoT WA) rather than the federal government.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">State Slogans &amp; Colorways</strong>
+              NSW features yellow plates; Victoria features blue text with "THE EDUCATION STATE"; Queensland uses maroon with "SUNSHINE STATE"; WA features "THE WILDFLOWER STATE".
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">CTP Insurance Integration</strong>
+              Annual registration renewal is integrated with mandatory Compulsory Third Party (CTP) injury cover, verified electronically via automated number plate recognition (ANPR).
+            </div>
+          </div>
+        )}
+
+        {country === 'NZ' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-300">
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Waka Kotahi (NZTA) Standard</strong>
+              Since 2001, standard plates follow a 3-letter + 3-number layout (ABC 123) with black embossed characters on reflective white aluminum.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Legacy Pre-2001 Series</strong>
+              Between 1964 and 2001, New Zealand used a 2-letter + 4-number series (AA 1000 to ZZ 9999), which remain fully legal and transferrable today.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">KiwiPlates Legal Ownership</strong>
+              Personalised plate combinations are legally treated as private property assets that can be owned, bought, traded, or inherited without vehicle attachment.
+            </div>
+          </div>
+        )}
+
+        {country === 'AT' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-300">
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Federal State Coats of Arms</strong>
+              Austrian plates feature the colorful official coat of arms (Landeswappen) of the vehicle’s federal state centered between the district code and serial number.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Green EV Font (IG-L Exemption)</strong>
+              Electric vehicles receive green lettering, granting legal exemption from Immissionsschutzgesetz-Luft (IG-L) environmental 100 km/h speed limits on motorways.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Authorities &amp; Armed Forces</strong>
+              "BP" denotes Bundespolizei (Federal Police); "BH" denotes Bundesheer (Federal Armed Forces); "W" identifies Vienna (Wien) federal capital vehicles.
+            </div>
+          </div>
+        )}
+
+        {country === 'CH' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm text-slate-300">
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Cantonal Sovereignty &amp; Crests</strong>
+              All 26 cantons issue independent plates featuring the Swiss Confederation cross shield on the left and the canton's official crest on the right.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Wechselschild Interchangeability</strong>
+              Swiss vehicle registration allows a single pair of plates to be shared interchangeably between two vehicles owned by the same driver.
+            </div>
+            <div className="p-4 bg-slate-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <strong className="text-white block font-semibold">Owner-Attached Registration</strong>
+              Swiss plates belong to the individual registered driver, not the automobile. When selling a vehicle, the owner retains their license plate number.
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Grid of Knowledge Sections */}
@@ -21,7 +224,7 @@ export const KnowledgeHub: React.FC = () => {
         <div className="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-md space-y-4">
           <div className="flex items-center gap-3 text-blue-400">
             <FileText className="w-6 h-6" />
-            <h3 className="font-bold text-lg text-white">Full License Plate Types Spectrum</h3>
+            <h3 className="font-bold text-lg text-white">Full German License Plate Types Spectrum</h3>
           </div>
           <div className="space-y-3 text-xs md:text-sm text-slate-300">
             <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
@@ -38,7 +241,7 @@ export const KnowledgeHub: React.FC = () => {
             </div>
             <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
               <strong className="text-white block font-semibold mb-0.5">Seasonal Plate (Saisonkennzeichen)</strong>
-              Stacked digits on right (e.g. 04 over 10). Operating window from 2 to 11 months. Vehicle tax & insurance apply only during active window.
+              Stacked digits on right (e.g. 04 over 10). Operating window from 2 to 11 months. Vehicle tax &amp; insurance apply only during active window.
             </div>
             <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
               <strong className="text-white block font-semibold mb-0.5">Short-Term Transfer (Kurzzeitkennzeichen)</strong>
@@ -49,7 +252,7 @@ export const KnowledgeHub: React.FC = () => {
               Red date band on right. Used to export vehicles abroad permanently with temporary liability insurance.
             </div>
             <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
-              <strong className="text-white block font-semibold mb-0.5">Dealer & Collector Red Plates (Rote Kennzeichen)</strong>
+              <strong className="text-white block font-semibold mb-0.5">Dealer &amp; Collector Red Plates (Rote Kennzeichen)</strong>
               Red font and border. '06' for car dealerships and workshops; '07' for vintage classic collectors.
             </div>
             <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
@@ -105,11 +308,11 @@ export const KnowledgeHub: React.FC = () => {
         <div className="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-md space-y-4">
           <div className="flex items-center gap-3 text-purple-400">
             <ShieldAlert className="w-6 h-6" />
-            <h3 className="font-bold text-lg text-white">Official & Diplomatic Formats</h3>
+            <h3 className="font-bold text-lg text-white">Official &amp; Diplomatic Formats</h3>
           </div>
           <div className="space-y-2.5 text-xs md:text-sm text-slate-300">
             <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
-              <strong className="text-white block font-semibold">Bundespräsident & Chancellor (0-1, 0-2)</strong>
+              <strong className="text-white block font-semibold">Bundespräsident &amp; Chancellor (0-1, 0-2)</strong>
               Special constitutional authority plates directly authorized under FZV Annex 2.
             </div>
             <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-700/50">
@@ -143,7 +346,7 @@ export const KnowledgeHub: React.FC = () => {
             </p>
             <strong className="block text-red-300 text-sm pt-2">State-Specific Bans:</strong>
             <p>
-              Combinations such as <span className="font-mono font-bold text-white">SD</span> (Sicherheitsdienst), and numeric neo-Nazi codes like <span className="font-mono font-bold text-white">18</span> (Adolf Hitler), <span className="font-mono font-bold text-white">88</span> (Heil Hitler), <span className="font-mono font-bold text-white">28</span> (Blood & Honour) combined with certain prefixes.
+              Combinations such as <span className="font-mono font-bold text-white">SD</span> (Sicherheitsdienst), and numeric neo-Nazi codes like <span className="font-mono font-bold text-white">18</span> (Adolf Hitler), <span className="font-mono font-bold text-white">88</span> (Heil Hitler), <span className="font-mono font-bold text-white">28</span> (Blood &amp; Honour) combined with certain prefixes.
             </p>
           </div>
         </div>
@@ -151,7 +354,7 @@ export const KnowledgeHub: React.FC = () => {
         {/* Section 5: International Registration Systems */}
         <div className="md:col-span-2 bg-slate-800/80 border border-slate-700/70 rounded-2xl p-6 shadow-md space-y-4">
           <div className="flex items-center gap-3 text-cyan-400">
-            <BookOpen className="w-6 h-6" />
+            <Globe className="w-6 h-6" />
             <h3 className="font-bold text-lg text-white">International License Plate Systems Overview</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs text-slate-300">

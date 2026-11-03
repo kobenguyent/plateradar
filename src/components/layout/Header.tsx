@@ -16,6 +16,9 @@ export const Header: React.FC<HeaderProps> = ({
   selectedCountry,
   setSelectedCountry,
 }) => {
+  const activeCountryInfo = SUPPORTED_COUNTRIES.find((c) => c.id === selectedCountry) || SUPPORTED_COUNTRIES[0];
+  const districtsCount = CountryAdapters[selectedCountry]?.getDistricts().length || 50;
+
   return (
     <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('checker')}
             className="flex items-center gap-3 cursor-pointer select-none group"
           >
-            {/* Logo Badge imitating an EU plate strip */}
+            {/* Logo Badge imitating a plate strip */}
             <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 border border-blue-400/30 group-hover:scale-105 transition-transform">
               <span className="font-extrabold text-base md:text-lg font-mono tracking-tighter">PR</span>
             </div>
@@ -34,12 +37,13 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-xl md:text-2xl font-black tracking-tight text-white font-sans">
                   Plate<span className="text-blue-400">Radar</span>
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                  GLOBAL
+                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1">
+                  <span>{activeCountryInfo.flag}</span>
+                  <span>{activeCountryInfo.euroCode}</span>
                 </span>
               </div>
               <p className="hidden md:block text-[11px] text-slate-400 -mt-0.5 font-medium">
-                Global License Plate Intelligence &amp; Live Radar
+                {activeCountryInfo.name} &amp; International License Plate Radar
               </p>
             </div>
           </div>
@@ -67,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <Search className="w-4 h-4" />
-              Directory (400+)
+              Directory ({districtsCount})
             </button>
 
             <button

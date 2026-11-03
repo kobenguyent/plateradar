@@ -103,6 +103,18 @@ export const SUPPORTED_COUNTRIES: CountryInfo[] = [
   },
 ];
 
+export const DEFAULT_PLATE_BY_COUNTRY: Record<CountryCode, string> = {
+  DE: 'B MW 1234 E',
+  AT: 'W 12345 A',
+  CH: 'ZH 854123',
+  JP: '品川 300 さ 12-34',
+  TH: '1กข 1234 Bangkok',
+  VN: '30A-123.45',
+  AU: 'NSW AA-12-BB',
+  NZ: 'ABC 123',
+  US: 'CA 7SAM123',
+};
+
 export const CountryAdapters: Record<CountryCode, CountryAdapter> = {
   DE: {
     id: 'DE',

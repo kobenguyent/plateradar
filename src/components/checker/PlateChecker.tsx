@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CountryCode, PlateParseResult } from '../../types';
-import { CountryAdapters, autoDetectCountry, SUPPORTED_COUNTRIES } from '../../core/country-registry';
+import { CountryAdapters, autoDetectCountry, SUPPORTED_COUNTRIES, DEFAULT_PLATE_BY_COUNTRY } from '../../core/country-registry';
 import { PlateRenderer } from '../plate/PlateRenderer';
 import { 
   CheckCircle2, 
@@ -137,6 +137,11 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
   const [inputVal, setInputVal] = useState<string>(initialValue || defaultInitial);
   const [copied, setCopied] = useState<boolean>(false);
 
+  // Sync inputVal whenever country changes or initialValue updates
+  useEffect(() => {
+    setInputVal(initialValue || DEFAULT_PLATE_BY_COUNTRY[country] || 'B MW 1234 E');
+  }, [country, initialValue]);
+
   // Parse plate dynamically
   const parseResult: PlateParseResult = adapter.parse(inputVal);
 
@@ -160,8 +165,8 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Top Search Bar & Interactive Plate Box */}
       <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 md:p-8 backdrop-blur shadow-2xl">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-          <div>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+          <div className="flex-1">
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               <ShieldCheck className="w-6 h-6 text-blue-400" />
               Plate Inspector & Live Decoder ({adapter.info.flag} {adapter.info.name})
@@ -169,10 +174,29 @@ export const PlateChecker: React.FC<PlateCheckerProps> = ({
             <p className="text-sm text-slate-400 mt-1">
               Type any vehicle license plate to inspect its jurisdiction, category, color coding, legal status, and privileges.
             </p>
+
+            {/* Quick Country Selector Tabs inside Inspector */}
+            <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-slate-700/60">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Country:</span>
+              {SUPPORTED_COUNTRIES.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => onSwitchCountry && onSwitchCountry(c.id, DEFAULT_PLATE_BY_COUNTRY[c.id])}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                    country === c.id
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-slate-900/70 text-slate-300 hover:text-white hover:bg-slate-700/70 border border-slate-700/60'
+                  }`}
+                >
+                  <span>{c.flag}</span>
+                  <span>{c.name}</span>
+                </button>
+              ))}
+            </div>
           </div>
           <button
             onClick={handleRandomize}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded-xl text-sm font-semibold transition"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded-xl text-sm font-semibold transition shrink-0"
           >
             <Sparkles className="w-4 h-4" />
             Random Plate

@@ -1,14 +1,91 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CountryCode, PlateCategory, PlateParseResult } from '../../types';
-import { CountryAdapters } from '../../core/country-registry';
+import { CountryAdapters, SUPPORTED_COUNTRIES } from '../../core/country-registry';
 import { PlateRenderer } from '../plate/PlateRenderer';
-import { Palette, Download, Sliders, Check, Shield } from 'lucide-react';
+import { Palette, Download, Sliders, Check, Shield, Sparkles } from 'lucide-react';
+
+export interface StudioPreset {
+  label: string;
+  category: PlateCategory;
+  districtCode: string;
+  classCode?: string;
+  middleLetters?: string;
+  numberPart: string;
+  suffix?: string;
+  stateCode?: string;
+}
+
+export const STUDIO_PRESETS_BY_COUNTRY: Record<CountryCode, StudioPreset[]> = {
+  DE: [
+    { label: 'Berlin Electric (E)', category: 'electric', districtCode: 'B', middleLetters: 'MW', numberPart: '1234', suffix: 'E', stateCode: 'berlin' },
+    { label: 'Munich Oldtimer (H)', category: 'classic', districtCode: 'M', middleLetters: 'CL', numberPart: '1970', suffix: 'H', stateCode: 'bayern' },
+    { label: 'Hamburg Seasonal (04/10)', category: 'seasonal', districtCode: 'HH', middleLetters: 'SB', numberPart: '2024', suffix: '', stateCode: 'hamburg' },
+    { label: 'Bundeswehr (Military Y)', category: 'federal_armed_forces', districtCode: 'Y', middleLetters: '', numberPart: '482195', suffix: '', stateCode: 'bundesadler' },
+    { label: 'Diplomatic Ambassador (0 17-1)', category: 'diplomatic', districtCode: '0', middleLetters: '', numberPart: '17-1', suffix: '', stateCode: 'berlin' },
+    { label: 'Short-Term 5-Day (Yellow)', category: 'short_term', districtCode: 'B', middleLetters: '', numberPart: '04123', suffix: '', stateCode: 'berlin' },
+  ],
+  US: [
+    { label: 'California (7SAM123)', category: 'standard', districtCode: 'CA', numberPart: '7SAM123' },
+    { label: 'Texas (ABC-1234)', category: 'standard', districtCode: 'TX', numberPart: 'ABC-1234' },
+    { label: 'New York (123-ABCD)', category: 'standard', districtCode: 'NY', numberPart: '123-ABCD' },
+    { label: 'Florida (12A-BCD)', category: 'standard', districtCode: 'FL', numberPart: '12A-BCD' },
+    { label: 'U.S. Diplomatic (OFM)', category: 'diplomatic', districtCode: 'CA', numberPart: 'D 1234' },
+    { label: 'U.S. Federal Government (GSA)', category: 'government', districtCode: 'CA', numberPart: 'G12-3456' },
+  ],
+  JP: [
+    { label: 'Tokyo Shinagawa 300', category: 'standard', districtCode: '品川', classCode: '300', middleLetters: 'さ', numberPart: '12-34' },
+    { label: 'Yokohama Kei Car 580', category: 'kei_car', districtCode: '横浜', classCode: '580', middleLetters: 'わ', numberPart: '56-78' },
+    { label: 'Osaka Commercial 200', category: 'commercial', districtCode: '大阪', classCode: '200', middleLetters: 'か', numberPart: '88-88' },
+    { label: 'Mt. Fuji Heritage 500', category: 'standard', districtCode: '富士山', classCode: '500', middleLetters: 'す', numberPart: '37-76' },
+    { label: 'Diplomatic Blue (外)', category: 'diplomatic', districtCode: '品川', classCode: '', middleLetters: '', numberPart: '1234' },
+  ],
+  TH: [
+    { label: 'Bangkok Sedan (1กข)', category: 'standard', districtCode: 'BKK', middleLetters: '1กข', numberPart: '1234' },
+    { label: 'Lucky Double Letter (8กก)', category: 'standard', districtCode: 'BKK', middleLetters: '8กก', numberPart: '8888' },
+    { label: 'Chiang Mai (2ขค)', category: 'standard', districtCode: 'CNX', middleLetters: '2ขค', numberPart: '5678' },
+    { label: 'Phuket Island (3ขง)', category: 'standard', districtCode: 'HKT', middleLetters: '3ขง', numberPart: '4040' },
+    { label: 'Temporary Red (ป้ายแดง)', category: 'short_term', districtCode: 'BKK', middleLetters: 'ก', numberPart: '9999' },
+  ],
+  VN: [
+    { label: 'Hà Nội Sedan (30A)', category: 'standard', districtCode: '30', middleLetters: 'A', numberPart: '123.45' },
+    { label: 'TP. Hồ Chí Minh (51H)', category: 'standard', districtCode: '51', middleLetters: 'H', numberPart: '888.88' },
+    { label: 'Central Government (80A)', category: 'government', districtCode: '80', middleLetters: 'A', numberPart: '001.01' },
+    { label: 'People’s Army Red (QA)', category: 'federal_armed_forces', districtCode: '30', middleLetters: 'QA', numberPart: '12-34' },
+    { label: 'Commercial Yellow (43E)', category: 'commercial', districtCode: '43', middleLetters: 'E', numberPart: '567.89' },
+  ],
+  AU: [
+    { label: 'NSW (First State)', category: 'standard', districtCode: 'NSW', numberPart: 'AA-12-BB' },
+    { label: 'Victoria (Education State)', category: 'standard', districtCode: 'VIC', numberPart: '1AA-2BB' },
+    { label: 'Queensland (Sunshine State)', category: 'standard', districtCode: 'QLD', numberPart: '123-AA1' },
+    { label: 'Western Australia (Wildflower)', category: 'standard', districtCode: 'WA', numberPart: '1AAA-123' },
+    { label: 'South Australia (Festival State)', category: 'standard', districtCode: 'SA', numberPart: 'S123-AAA' },
+  ],
+  NZ: [
+    { label: 'Current Standard (ABC 123)', category: 'standard', districtCode: 'NZ', middleLetters: 'ABC', numberPart: '123' },
+    { label: 'Modern Series (KOB 789)', category: 'standard', districtCode: 'NZ', middleLetters: 'KOB', numberPart: '789' },
+    { label: 'Legacy Pre-2001 (AA 1234)', category: 'classic', districtCode: 'NZ', middleLetters: 'AA', numberPart: '1234' },
+    { label: 'Personalised KiwiPlate (KIWI)', category: 'standard', districtCode: 'NZ', middleLetters: 'KIWI', numberPart: '' },
+  ],
+  AT: [
+    { label: 'Wien Capital (W 12345 A)', category: 'standard', districtCode: 'W', numberPart: '12345 A' },
+    { label: 'Salzburg EV Green (S 54321 E)', category: 'electric', districtCode: 'S', numberPart: '54321 E' },
+    { label: 'Federal Police (BP 12345)', category: 'federal_police', districtCode: 'BP', numberPart: '12345' },
+    { label: 'Armed Forces (BH 67890)', category: 'federal_armed_forces', districtCode: 'BH', numberPart: '67890' },
+  ],
+  CH: [
+    { label: 'Zürich Canton (ZH 854123)', category: 'standard', districtCode: 'ZH', numberPart: '854123' },
+    { label: 'Bern Canton (BE 654321)', category: 'standard', districtCode: 'BE', numberPart: '654321' },
+    { label: 'Geneva Canton (GE 123456)', category: 'standard', districtCode: 'GE', numberPart: '123456' },
+    { label: 'Swiss Armed Forces (M 12345)', category: 'federal_armed_forces', districtCode: 'M', numberPart: '12345' },
+  ],
+};
 
 interface PlateStudioProps {
   country: CountryCode;
+  onCountryChange?: (country: CountryCode) => void;
 }
 
-export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
+export const PlateStudio: React.FC<PlateStudioProps> = ({ country, onCountryChange }) => {
   const adapter = CountryAdapters[country];
   const districts = adapter.getDistricts();
 
@@ -104,6 +181,33 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
   const [selectedStateCode, setSelectedStateCode] = useState<string>('berlin');
   const [fontType, setFontType] = useState<'FE' | 'DIN'>('FE');
   const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
+
+  // Sync state if country prop changes
+  useEffect(() => {
+    const nextInit = getInitialState();
+    setCategory(nextInit.category);
+    setDistrictCode(nextInit.districtCode);
+    setClassCode(nextInit.classCode);
+    setMiddleLetters(nextInit.middleLetters);
+    setNumberPart(nextInit.numberPart);
+    setSuffix('');
+    if (country === 'DE') {
+      setSelectedStateCode('berlin');
+    }
+  }, [country]);
+
+  // Apply quick preset
+  const handleApplyPreset = (preset: StudioPreset) => {
+    setCategory(preset.category);
+    setDistrictCode(preset.districtCode);
+    setClassCode(preset.classCode || '');
+    setMiddleLetters(preset.middleLetters || '');
+    setNumberPart(preset.numberPart);
+    setSuffix(preset.suffix || '');
+    if (preset.stateCode) {
+      setSelectedStateCode(preset.stateCode);
+    }
+  };
 
   // Sync state badge when district changes
   const handleDistrictChange = (code: string) => {
@@ -329,6 +433,29 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Studio Header & Interactive Preview */}
       <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 md:p-8 backdrop-blur shadow-xl">
+        {/* Country Selector Pills */}
+        {onCountryChange && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 border-b border-slate-700/60 scrollbar-thin">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+              Country:
+            </span>
+            {SUPPORTED_COUNTRIES.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => onCountryChange(c.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 ${
+                  country === c.id
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                    : 'bg-slate-900/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60'
+                }`}
+              >
+                <span>{c.flag}</span>
+                <span>{c.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -351,6 +478,27 @@ export const PlateStudio: React.FC<PlateStudioProps> = ({ country }) => {
         {/* Live Plate Preview Display */}
         <div className="py-8 flex flex-col items-center justify-center bg-slate-950/70 rounded-2xl border border-slate-800 p-6 shadow-inner">
           <PlateRenderer plate={customPlate} size="xl" showScrews={true} />
+        </div>
+
+        {/* Quick Style Presets */}
+        <div className="mt-6 pt-5 border-t border-slate-700/60">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              {adapter.info.name} Quick Style Presets:
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(STUDIO_PRESETS_BY_COUNTRY[country] || []).map((preset) => (
+              <button
+                key={preset.label}
+                onClick={() => handleApplyPreset(preset)}
+                className="px-3 py-1.5 bg-slate-900/80 hover:bg-blue-600/30 text-slate-300 hover:text-blue-200 border border-slate-700 hover:border-blue-500/50 rounded-xl text-xs font-medium transition"
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
